@@ -2,6 +2,8 @@
 
 You are an AI assistant helping a user install the duperpowers plugin. Follow these steps exactly.
 
+**Important:** The `claude plugin` commands below are real CLI commands (added in Claude Code 2.1+). Run them via Bash. If a command fails with "unknown command", tell the user their Claude Code version may be too old and they should update with `claude update`.
+
 ## Prerequisites
 
 Check if the `superpowers` plugin is installed:
@@ -51,7 +53,11 @@ If yes:
 
 ## Step 5: Verify
 
-Run `claude plugin list` and confirm:
+```bash
+claude plugin list
+```
+
+Confirm:
 - `duperpowers` appears in the list
 - `duperpowers-go` appears (if installed in step 3)
 
