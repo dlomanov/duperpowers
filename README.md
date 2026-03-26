@@ -19,6 +19,10 @@ Tell Claude:
 Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/SETUP.md
 ```
 
+This will install superpowers (if missing), duperpowers core, optionally duperpowers-go, and offer to add personal preferences to your CLAUDE.md. Your existing CLAUDE.md will not be overwritten — only appended to.
+
+**RTK** (token-saving CLI proxy) is not included — install separately if needed: `brew install rtk && rtk init -g`
+
 ## Manual Install
 
 ### Claude Code
