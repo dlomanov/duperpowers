@@ -68,6 +68,10 @@ duperpowers/
 │       ├── hooks/                         # Go-specific context injection
 │       ├── agents/gocheck.md              # Go verification agent
 │       └── skills/                        # 4 Go skills
+├── standalone/
+│   └── project-commands/              # standalone skill (manual install)
+│       ├── SKILL.md                   # template — adapt to your project
+│       └── INSTALL.md                 # fetch-and-follow installer
 ├── templates/
 │   └── claude-md-snippet.md               # personal preferences template
 ├── SETUP.md                               # fetch-and-follow installer
@@ -100,6 +104,14 @@ duperpowers/
 | `go-reviewer` | Two modes: spec + quality, PASS/FAIL verdicts |
 | `make-go-review` | Quick review wrapper for branch diff |
 | `gocheck` (agent) | Go build/test/lint verification |
+
+### Standalone
+
+| Skill | Purpose | Install |
+|-------|---------|---------|
+| `project-commands` | Make targets, test commands, go doc protocol | [INSTALL.md](standalone/project-commands/INSTALL.md) |
+
+Not part of plugins — install manually per project or globally. The SKILL.md is a template to adapt.
 
 ## How Overrides Work
 
