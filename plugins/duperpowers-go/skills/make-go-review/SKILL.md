@@ -1,6 +1,6 @@
 ---
 name: make-go-review
-description: Deep Go code review of current branch diff against origin/master (*.go files)
+description: "Deep Go code review of current branch diff against origin/master (*.go files)"
 disable-model-invocation: true
 argument-hint: [additional context]
 ---

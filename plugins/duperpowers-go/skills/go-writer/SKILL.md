@@ -146,12 +146,12 @@ lo.Map(items, func(v Item, _ int) string { return v.Name })
 **SN-2. Context-aware names.** Package and type provide context — use them to keep names short.
 
 ```go
-// BAD — type name stutters with package: payout.PayoutService
-package payout
-type PayoutService struct { ... }
+// BAD — type name stutters with package: order.OrderService
+package order
+type OrderService struct { ... }
 
-// GOOD — package is context: payout.Service
-package payout
+// GOOD — package is context: order.Service
+package order
 type Service struct { ... }
 ```
 
@@ -159,8 +159,8 @@ When a package has multiple operations, method and model names SHOULD include th
 
 ```go
 // GOOD — distinguishes operations within same package
-func (x *Service) CreatePayout(req CreatePayoutRequest) (*CreatePayoutResult, error)
-func (x *Service) CreateRefund(req CreateRefundRequest) (*CreateRefundResult, error)
+func (x *Service) CreateOrder(req CreateOrderRequest) (*CreateOrderResult, error)
+func (x *Service) CancelOrder(req CancelOrderRequest) (*CancelOrderResult, error)
 ```
 
 **SN-3. Variable grouping.** 3+ variables → `var(...)` block. Aligns visually, signals "these belong together".
@@ -268,7 +268,7 @@ type (
 type Handler struct {
     repo    Repo
     logger  *slog.Logger
-    handler PaymentHandler
+    handler EventHandler
     clock   Clock
 }
 
@@ -277,7 +277,7 @@ type Handler struct {
     clock   Clock
     logger  *slog.Logger
     repo    Repo
-    handler PaymentHandler
+    handler EventHandler
 }
 ```
 

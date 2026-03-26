@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Verify code after changes - build, then run minimal sufficient tests
+description: "Verify code after changes - build, then run minimal sufficient tests"
 user_invocable: false
 ---
 

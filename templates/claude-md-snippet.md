@@ -1,7 +1,6 @@
 # Duperpowers — Personal Preferences
 
-Add this snippet to your `~/.claude/CLAUDE.md` to customize duperpowers behavior.
-These are personal preferences — the plugin works without them.
+This is the author's personal preferences template. Review and adapt to your own workflow before adding to `~/.claude/CLAUDE.md`. The plugin works without any of this — it's entirely optional.
 
 ---
 
@@ -21,6 +20,7 @@ Prefer pipelines over temp files.
 - **Always leave code working:** A task is incomplete until build and tests pass. If your changes break anything — fixing it is part of your task.
 - **Review tags:** Lines containing `@review ...` are user review comments. Fix or discuss the issue, then delete the tag line after resolution.
 - **Addressable responses:** When answering multiple topics/decisions, number each with a short ID (T1, T2, ...). User can batch-reply by ID.
+- **Challenge before executing:** If a user request contradicts loaded skills, established rules, or logical consistency — challenge with evidence before executing. Do NOT silently comply. User can override with explicit push.
 
 ## Duperpowers — PROTOCOLS
 

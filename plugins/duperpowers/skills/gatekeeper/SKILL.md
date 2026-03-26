@@ -1,7 +1,6 @@
 ---
 name: gatekeeper
-description: >
-  Use when engineer has a solution idea and wants to validate readiness before coding. Triggers: 3L format (FINAL/TRUE/HYPOTHESIS), "ready to implement", "GO/NO-GO", "pressure-test my approach", post-implementation debrief. Do NOT trigger for exploration without a formed idea, actual coding, docs, or general questions.
+description: "Use when engineer has a solution idea and wants to validate readiness before coding. Triggers: 3L format (FINAL/TRUE/HYPOTHESIS), ready to implement, GO/NO-GO, pressure-test my approach, post-implementation debrief. Do NOT trigger for exploration without a formed idea, actual coding, docs, or general questions."
 ---
 
 # GATEKEEPER
@@ -34,15 +33,15 @@ Engineer provides three lines:
 
 **Good 3L:**
 ```
-FINAL: payment callback returns 200 within SLA, idempotency key prevents double-charge
-TRUE: PaymentService.HandleCallback (pkg/payment/callback.go:47), Kafka consumer in pkg/events/
+FINAL: order callback returns 200 within SLA, idempotency key prevents double-processing
+TRUE: OrderService.HandleCallback (pkg/order/callback.go:47), event consumer in pkg/events/
 HYPOTHESIS: current handler is not idempotent; adding a dedup table + unique constraint should be enough
 ```
 
 **Bad 3L:**
 ```
-FINAL: fix the payment bug
-TRUE: somewhere in payment service
+FINAL: fix the order bug
+TRUE: somewhere in order service
 HYPOTHESIS: (empty)
 ```
 Bad → Red triage: FINAL not verifiable, TRUE not specific, HYPOTHESIS empty (autopilot).
@@ -151,4 +150,4 @@ Self-check before every response: am I asking or telling?
 | Engineer explains, not you | "The handler works by..." → ask "walk me through the handler flow" |
 | Never suggest implementation | "You could add a mutex here" → ask "how do you prevent concurrent access?" |
 | Never soften NO-GO | "Almost there but..." → "NO-GO. [gap]. Check: [where]. Return with: [what]" |
-| Pressure ∝ stakes | Config typo = 1 question. New payment flow = full L1-L6. |
+| Pressure ∝ stakes | Config typo = 1 question. New order flow = full L1-L6. |

@@ -14,6 +14,7 @@ description: "MUST invoke after writing a plan (step 3 in workflow). Builds depe
 **AA-3.** ALWAYS prefer separate agents over inline chains. Fresh context + skill injection > accumulated context.
 **AA-4.** STOP if plan has no `context_needs`/`context_shares` — run writing-plans first.
 **AA-5.** STOP and ask user if an edge cannot be classified as artifact or accumulated after applying the bright-line test (CT-2).
+**AA-6.** After producing artifacts, annotate EACH task in the plan body with `- **agent:** {agent-id}` in its metadata block. Table is the reference for orchestrator; metadata is the reference for the reader.
 
 </IMPORTANT>
 
@@ -141,33 +142,33 @@ Rules: pre-impl agents first, user reviews before impl starts, max 4 concurrent,
 Input plan (5 steps):
 
 ```
-Step 1: Test design for CreatePayout
+Step 1: Test design for CreateOrder
   stage: pre-implementation
-  scope: internal/usecases/payout/
+  scope: internal/usecases/order/
   context_needs: []
   context_shares: [test case list for step 2]
 
 Step 2: Test implementation
   stage: implementation
-  scope: internal/usecases/payout/create_test.go
+  scope: internal/usecases/order/create_test.go
   context_needs: [step 1: approved test cases]
   context_shares: [test contracts for step 3]
 
 Step 3: Implementation
   stage: implementation
-  scope: internal/usecases/payout/create.go
+  scope: internal/usecases/order/create.go
   context_needs: [step 2: test file contracts]
   context_shares: [implementation for step 4]
 
 Step 4: Coverage hardening
   stage: implementation
-  scope: internal/usecases/payout/create_test.go
+  scope: internal/usecases/order/create_test.go
   context_needs: [step 3: implementation to review for uncovered branches]
   context_shares: []
 
 Step 5: Converter tests (independent)
   stage: implementation
-  scope: internal/adapters/grpc/converter/payout_test.go
+  scope: internal/adapters/grpc/converter/order_test.go
   context_needs: []
   context_shares: []
 ```
@@ -215,6 +216,18 @@ Implementation:
   Parallel: opus-4 => sonnet-3 (checkpoint)
 ```
 
+**AA-6: annotate tasks in plan body:**
+```
+Step 1: Test design for CreateOrder
+  ...
+  agent: opus-1
+
+Step 2: Test implementation
+  ...
+  agent: opus-2
+```
+(repeat for all steps)
+
 ## Integration
 
 Runs as step 3 in plan-orchestrator workflow:
@@ -242,5 +255,6 @@ Before outputting:
 - Agent IDs are unique, sequential, follow `{model}-{N}` convention (AI-1)
 - `waits_for` column consistent with dependency graph (DG-1)
 - Could not classify an edge => asked user, not guessed (AA-5)
+- Every task in plan body has `**agent:**` field matching agent table (AA-6)
 
 </IMPORTANT>

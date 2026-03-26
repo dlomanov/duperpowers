@@ -13,13 +13,13 @@ Two plugins, one marketplace:
 
 ## Quick Install
 
-Tell Claude:
+Works in both Claude Code and Cursor. Tell your AI:
 
 ```
-Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/SETUP.md
+Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/INSTALL.md
 ```
 
-This will install superpowers (if missing), duperpowers core, optionally duperpowers-go, and offer to add personal preferences to your CLAUDE.md. Your existing CLAUDE.md will not be overwritten — only appended to.
+This will detect your platform, install superpowers (if missing), duperpowers core, optionally duperpowers-go, and offer to configure anchor rules, personal preferences, and standalone skills. Your existing CLAUDE.md sections are never duplicated — the installer is idempotent.
 
 **RTK** (token-saving CLI proxy) is not included — install separately if needed: `brew install rtk && rtk init -g`
 
@@ -46,9 +46,12 @@ Install order: superpowers first, then duperpowers, then duperpowers-go.
 ### Cursor
 
 ```
+/add-plugin superpowers
 /add-plugin duperpowers
 /add-plugin duperpowers-go
 ```
+
+Install order: superpowers first, then duperpowers, then duperpowers-go.
 
 ## CLAUDE.md Customization
 
@@ -73,12 +76,15 @@ duperpowers/
 │       ├── agents/gocheck.md              # Go verification agent
 │       └── skills/                        # 4 Go skills
 ├── standalone/
-│   └── project-commands/              # standalone skill (manual install)
-│       ├── SKILL.md                   # template — adapt to your project
+│   ├── project-commands/              # standalone skill (manual install)
+│   │   ├── SKILL.md                   # template — adapt to your project
+│   │   └── INSTALL.md                 # fetch-and-follow installer
+│   └── prompt-engineering-rules/      # standalone skill (manual install)
+│       ├── SKILL.md                   # reference for writing AI instruction files
 │       └── INSTALL.md                 # fetch-and-follow installer
 ├── templates/
 │   └── claude-md-snippet.md               # personal preferences template
-├── SETUP.md                               # fetch-and-follow installer
+├── INSTALL.md                             # fetch-and-follow installer
 └── README.md
 ```
 
@@ -114,11 +120,13 @@ duperpowers/
 | Skill | Purpose | Install |
 |-------|---------|---------|
 | `project-commands` | Make targets, test commands, go doc protocol | [INSTALL.md](standalone/project-commands/INSTALL.md) |
+| `prompt-engineering-rules` | Reference for writing CLAUDE.md, SKILL.md, AI instruction files | [INSTALL.md](standalone/prompt-engineering-rules/INSTALL.md) |
 
-Not part of plugins — install manually per project or globally. The SKILL.md is a template to adapt.
+Not part of plugins — install manually per project or globally.
 
 ```
 Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/project-commands/INSTALL.md
+Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/prompt-engineering-rules/INSTALL.md
 ```
 
 ## How Overrides Work

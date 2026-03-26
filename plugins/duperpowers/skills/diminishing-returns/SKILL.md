@@ -65,10 +65,10 @@ Classify each resulting plan change (not the comment, the actual edit):
 ### Examples
 
 ```
-"добавь обработку ErrDuplicate в repo.Save"
+"добавь обработку ErrNotFound в repo.Save"
 → STRUCTURAL — missed edge case, adds test + implementation
 
-"принимай context первым аргументом в CreatePayout"
+"принимай context первым аргументом в CreateOrder"
 → CONTRACTUAL — interface change, same approach
 
 "перефразируй описание шага 3, непонятно"

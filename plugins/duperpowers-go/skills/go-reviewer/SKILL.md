@@ -82,7 +82,7 @@ Review changed code. Skip generated and excluded files. Each check references du
 ### Naming & Style
 
 - **SN-1** Non-standard receivers (not `x` for structs, not `r` for repo, not `v` for lambdas)
-- **SN-2** Name stutter with package (`payout.PayoutService`)
+- **SN-2** Name stutter with package (`order.OrderService`)
 - **SN-3** 3+ scattered `:=` → should be `var(...)` block
 - **STY-1** Line > 120 chars or > 3 args on one line
 - **STY-2** > 2 struct fields initialized on one line

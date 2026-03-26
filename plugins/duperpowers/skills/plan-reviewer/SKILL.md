@@ -134,8 +134,8 @@ GOOD — concrete sonnet step:
 Step 3: Implementation
   stage: implementation
   agent: sonnet-1
-  scope: internal/usecases/payout/create.go
-  what: implement CreatePayout to pass all tests from step 2
+  scope: internal/usecases/order/create.go
+  what: implement CreateOrder to pass all tests from step 2
   criteria: all tests from step 2 pass (green phase)
   skills: go-writer, verify
 ```
@@ -145,8 +145,8 @@ BAD — vague sonnet step:
 Step 3: Implementation
   stage: implementation
   agent: sonnet-1
-  scope: internal/usecases/payout/
-  what: figure out how to implement payout creation
+  scope: internal/usecases/order/
+  what: figure out how to implement order creation
   criteria: works correctly
   skills: go-writer
 ```

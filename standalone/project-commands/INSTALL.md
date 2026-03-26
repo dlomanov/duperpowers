@@ -42,16 +42,18 @@ You are an AI assistant helping a user install the project-commands skill. Follo
 
 1. Ask the user: **"Install project-commands as a project-level skill (current repo only) or user-level skill (all repos)?"**
 
-2. If project-level:
+2. Check if the SKILL.md already exists at the target path. If it does, ask: **"project-commands is already installed at [path]. Overwrite with the latest version? Your customizations will be lost."** Only overwrite if user confirms.
+
+3. If project-level:
 ```bash
 mkdir -p .claude/skills/project-commands
 ```
 Fetch SKILL.md from `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/project-commands/SKILL.md` and write it to `.claude/skills/project-commands/SKILL.md`.
 
-3. If user-level:
+4. If user-level:
 ```bash
 mkdir -p ~/.claude/skills/project-commands
 ```
 Fetch SKILL.md and write it to `~/.claude/skills/project-commands/SKILL.md`.
 
-4. Tell the user: **"Template installed. Edit the SKILL.md to match your project's actual Makefile targets. The current content is a template with common examples."**
+5. Tell the user: **"Template installed. Edit the SKILL.md to match your project's actual Makefile targets. The current content is a template with common examples."**
