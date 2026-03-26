@@ -113,6 +113,10 @@ duperpowers/
 
 Not part of plugins — install manually per project or globally. The SKILL.md is a template to adapt.
 
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/project-commands/INSTALL.md
+```
+
 ## How Overrides Work
 
 Both plugins inject context via session-start hooks. The injections are **additive** — Claude sees both:
