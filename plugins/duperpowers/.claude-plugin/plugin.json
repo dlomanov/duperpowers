@@ -1,0 +1,13 @@
+{
+  "name": "duperpowers",
+  "displayName": "Duperpowers",
+  "description": "Universal planning, orchestration, and superpowers overrides",
+  "version": "0.1.0",
+  "author": {
+    "name": "Denis Lomanov"
+  },
+  "homepage": "https://github.com/dlomanov/duperpowers",
+  "repository": "https://github.com/dlomanov/duperpowers",
+  "license": "MIT",
+  "keywords": ["planning", "orchestration", "skills", "superpowers-companion"]
+}

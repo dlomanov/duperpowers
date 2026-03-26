@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# PreToolUse hook — reinforces override trigger when superpowers skills load
+#
+# Fires on every Skill tool invocation. If the skill being loaded is from
+# superpowers, injects a reminder to also invoke superpowers-overrides.
+
+set -euo pipefail
+
+input=$(cat)
+
+# Extract skill name from tool_input JSON
+# Handles: {"tool_input": {"skill": "superpowers:brainstorming"}}
+skill_name=""
+if command -v jq &>/dev/null; then
+  skill_name=$(echo "$input" | jq -r '.tool_input.skill // empty' 2>/dev/null || true)
+else
+  skill_name=$(echo "$input" | grep -o '"skill"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/' || true)
+fi
+
+# Only trigger for superpowers skills, skip our own
+case "$skill_name" in
+  superpowers:*)
+    context="OVERRIDE REMINDER: You are loading ${skill_name}. You MUST ALSO invoke duperpowers:superpowers-overrides (if not already invoked in this turn)."
+
+    escape_for_json() {
+      local s="$1"
+      s="${s//\\/\\\\}"
+      s="${s//\"/\\\"}"
+      s="${s//$'\n'/\\n}"
+      printf '%s' "$s"
+    }
+
+    escaped=$(escape_for_json "$context")
+
+    if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+      printf '{"additional_context": "%s"}\n' "$escaped"
+    elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+      printf '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": "%s"}}\n' "$escaped"
+    else
+      printf '{"additional_context": "%s"}\n' "$escaped"
+    fi
+    ;;
+esac
+
+exit 0

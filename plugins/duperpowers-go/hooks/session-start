@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# SessionStart hook — injects duperpowers Go context
+
+set -euo pipefail
+
+CONTEXT='<IMPORTANT>
+## Duperpowers Go — Active Context
+
+### Go Skill Pairings with Superpowers
+When using superpowers:test-driven-development with Go code (*.go) → also invoke duperpowers-go:go-writer-test
+When using superpowers:requesting-code-review on Go code → also invoke duperpowers-go:go-reviewer (spec or quality)
+
+### Go Anchor Rules
+- Writing Go code (*.go files) → invoke duperpowers-go:go-writer
+- Writing Go tests (*_test.go files) → invoke duperpowers-go:go-writer-test
+- Go code review → invoke duperpowers-go:go-reviewer
+- Go verification → delegate to duperpowers-go:gocheck agent
+</IMPORTANT>'
+
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+escaped=$(escape_for_json "$CONTEXT")
+
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+  printf '{\n  "additional_context": "%s"\n}\n' "$escaped"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+  printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$escaped"
+else
+  printf '{\n  "additional_context": "%s"\n}\n' "$escaped"
+fi
+
+exit 0

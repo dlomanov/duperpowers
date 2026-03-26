@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "./hooks/session-start"
+      }
+    ],
+    "preToolUse": [
+      {
+        "matcher": "Skill",
+        "command": "./hooks/skill-override"
+      }
+    ]
+  }
+}

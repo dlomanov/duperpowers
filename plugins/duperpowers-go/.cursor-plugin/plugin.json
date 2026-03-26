@@ -1,0 +1,14 @@
+{
+  "name": "duperpowers-go",
+  "displayName": "Duperpowers Go",
+  "description": "Go conventions, testing, and code review skills",
+  "version": "2.0.0",
+  "author": {
+    "name": "Denis Lomanov"
+  },
+  "homepage": "https://github.com/dlomanov/duperpowers",
+  "repository": "https://github.com/dlomanov/duperpowers",
+  "license": "MIT",
+  "keywords": ["go", "golang", "testing", "code-review", "superpowers-companion"],
+  "hooks": "./hooks/hooks-cursor.json"
+}

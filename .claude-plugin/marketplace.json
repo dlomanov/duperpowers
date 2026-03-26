@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "dlomanov",
+  "description": "Duperpowers — superpowers companion plugins by Denis Lomanov",
+  "owner": {
+    "name": "Denis Lomanov"
+  },
+  "plugins": [
+    {
+      "name": "duperpowers",
+      "description": "Universal planning, orchestration, and superpowers overrides",
+      "source": "./plugins/duperpowers",
+      "category": "development"
+    },
+    {
+      "name": "duperpowers-go",
+      "description": "Go conventions, testing, and code review skills",
+      "source": "./plugins/duperpowers-go",
+      "category": "development"
+    }
+  ]
+}
