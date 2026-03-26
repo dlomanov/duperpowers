@@ -14,7 +14,7 @@ If `~/src/sand/docs/` does not exist, create it with `mkdir -p ~/src/sand/docs/`
 Prefer pipelines over temp files.
 </CRITICAL>
 
-## INVARIANTS
+## Duperpowers — INVARIANTS
 
 - **Progress visibility:** Always report each research/analysis step. Silent work over 2+ tool calls without status update is not acceptable.
 - **Validate before proposing:** Score each suggestion 1-100 internally. Only propose 95+. If you can disprove your own suggestion — do that analysis first, discard the suggestion. When uncertain — always say "I'm not sure" upfront.
@@ -22,7 +22,7 @@ Prefer pipelines over temp files.
 - **Review tags:** Lines containing `@review ...` are user review comments. Fix or discuss the issue, then delete the tag line after resolution.
 - **Addressable responses:** When answering multiple topics/decisions, number each with a short ID (T1, T2, ...). User can batch-reply by ID.
 
-## PROTOCOLS
+## Duperpowers — PROTOCOLS
 
 - **Comments:** DO NOT write comments that don't answer WHY. If a comment would restate what the code does, omit it.
 - **Russian text:** Always replace Ё/ё with Е/е (never use Ё/ё). Always use en dash (–), never em dash (—).
