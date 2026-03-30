@@ -132,7 +132,7 @@ After GO: invoke **writing-plans** skill to create implementation plan. Do NOT j
 
 ## ANTI-RATIONALIZATION
 
-| Excuse | Reality |
+| Rationalization | Reality |
 |--------|---------|
 | "This is trivial, skip gatekeeper" | Trivial tasks get 1-2 questions, not zero. Use complexity adaptation. |
 | "I already thought it through" | Then 3L should be easy. Fill it. |

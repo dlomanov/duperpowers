@@ -261,7 +261,7 @@ m.locker.EXPECT().
     name: "timeout",
     args: args{
         ttl:    200 * time.Millisecond,
-        status: transactions.Status_STATUS_PAYOUT_NEW,
+        status: transactions.Status_STATUS_CREATED,
         key:    gofakeit.UUID(),
     },
 },
@@ -270,7 +270,7 @@ m.locker.EXPECT().
 | Use | gofakeit | Hardcoded |
 |-----|----------|-----------|
 | IDs, keys, names | `gofakeit.UUID()`, `gofakeit.Word()` | — |
-| Enums, statuses | — | `Status_STATUS_PAYOUT_NEW` |
+| Enums, statuses | — | `Status_STATUS_CREATED` |
 | Durations, timeouts | — | `200 * time.Millisecond` |
 | Amounts | `testx.CreateMoney()` | — |
 | Counters, indices | — | `int64(1)`, `int64(2)` |

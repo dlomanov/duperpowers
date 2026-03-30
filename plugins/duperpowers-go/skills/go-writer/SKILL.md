@@ -95,6 +95,8 @@ var ErrOrderNotFound = errors.New("order not found")  // exported, cross-package
 
 **GP-4. Wrap = stacktrace.** Every error from function/method MUST be wrapped with callee name.
 
+**GP-7. Every code change MUST have an obvious reason.** Do not introduce changes that have no clear purpose — no dead assignments, no split-then-rejoin chains, no no-op transformations.
+
 ```go
 return fmt.Errorf("parseConfig: %w", err)      // function
 return fmt.Errorf("validate: %w", err)          // own method
@@ -281,13 +283,15 @@ type Handler struct {
 }
 ```
 
+**LY-4. Layer boundaries.** Domain and model packages NEVER contain infrastructure knowledge — raw SQL, column names, JSONB paths, type casts (`::INT`), table references. Infrastructure logic ALWAYS lives in adapter packages.
+
 ## Errors
 
 **ERR-1. Sentinel by default.** See GP-3.
 
 **ERR-2. Wrap = stacktrace.** See GP-4.
 
-**ERR-3. `errorsx.Is[T]` over `errors.As`.** Check `msgerrs`/`errorsx` package in the project. Type parameter = pointer type (because only `*T` implements `error`).
+**ERR-3. `errorsx.Is[T]` over `errors.As`.** Check if your project has an `errorsx` or similar typed-errors package. Type parameter = pointer type (because only `*T` implements `error`).
 
 ```go
 // BAD
@@ -409,11 +413,9 @@ if err = txManager.Do(ctx, bucket, func(ctx context.Context) error {
 }
 ```
 
-**PS-3. Errgroup wrappers.** For error propagation use project errgroup, not raw `sync.WaitGroup`:
-- `platform/errgroup/v2`: `eg.Go(func() error { ... })`, `eg.Wait()`
-- `o3sync/errgroup`: `errg, _ := errgroup.WithContext(ctx, "name")`, `errg.GoWithContext(func(ctx context.Context) error { ... })`
+**PS-3. Errgroup wrappers.** For error propagation use project errgroup wrapper (if available), not raw `sync.WaitGroup`. Check project imports for errgroup packages. Pattern: `eg.Go(func() error { ... })`, `eg.Wait()`.
 
-**PS-4. Scratch config.** Native rtconfig types → `p.config.{Group}.{Field}.Value()`. Custom parsing only via `cfgpr.MustGetValue` with `parseJSON[T]`. Look at neighboring config methods for the pattern.
+**PS-4. Config access.** Use project config library for typed config access. Look at neighboring config methods for the pattern — follow existing conventions.
 
 <IMPORTANT>
 

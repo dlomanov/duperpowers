@@ -29,7 +29,7 @@ CLAUDE.md rules lose priority as conversation grows.
 
 ## Anti-rationalization
 
-| Thought | Reality |
+| Rationalization | Reality |
 |---------|---------|
 | "I already read CLAUDE.md at session start" | Thousands of tokens ago. Re-read now |
 | "I remember the planning rules" | Prove it — Step 3 exists for this |

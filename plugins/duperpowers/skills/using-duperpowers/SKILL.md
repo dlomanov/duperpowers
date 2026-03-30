@@ -32,7 +32,7 @@ This is non-negotiable. The override modifies superpowers defaults:
 - Git worktrees: NEVER auto-use, only when user explicitly requests
 - Parallel agents: ALLOWED when steps do not share files, max 4
 
-| Thought | Reality |
+| Rationalization | Reality |
 |---------|---------|
 | "I already loaded superpowers-overrides earlier" | Load it again. Context may have been compressed. |
 | "This superpowers skill doesn't need overrides" | ALL superpowers skills get overrides. No exceptions. |

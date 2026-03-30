@@ -11,9 +11,47 @@ Review Go code changes. Static analysis only — read code, never run it.
 
 ## Reviewer Rules
 
-**RR-1.** Diff only — never flag unchanged code.
+**RR-1.** Review scope ALWAYS expands ONE LEVEL UP and ONE LEVEL DOWN from the change. This is the core mechanic — every other review rule operates within this scope.
+
+ONE LEVEL UP — from change to its container, then across all siblings/usages at that level:
+
+| Change | Up (container) | Across (siblings/usages) |
+|--------|---------------|--------------------------|
+| line | function/method | all lines in that function |
+| function/method | package | all callers in the package |
+| signature / contract | — | all implementations + all callers |
+| struct field | — | all usages of the struct |
+| proto field | — | all response messages → all RPC methods |
+
+ONE LEVEL DOWN — from change into callees, then across all methods/functions of the same type:
+
+| Change | Down (callee) | Across (sibling methods) |
+|--------|--------------|--------------------------|
+| call `x.Method()` | Method implementation | all methods of x's type |
+| call `Func(args)` | Func implementation | — |
+| guard + call | callee's internal guards | same guard pattern in sibling callees |
+
+- ALWAYS inspect callee implementation — verify caller does not duplicate callee's internal guard
+- When code calls `instance.Method()` — ALWAYS review ALL methods of that type, not just the called one
+
+SCOPE-DOWN MANDATORY CHECKS:
+
+CHECK A — Redundant guards: For EVERY `if <condition> { callee() }` pattern, READ the callee source. If callee has the same condition internally → flag as redundant.
+
+CHECK B — Redundant pre-validation: When code calls `validate(x)` before `parse(x)` and `parse` returns an error that IS checked — the pre-validation adds ZERO value. Remove it and behavior is identical.
+
+CHECK C — Wrong predicate: When code uses `type.PredicateA()`, ALWAYS read ALL predicate methods of that type. Compare their semantics. Verify the chosen predicate is correct for the intent.
+
+| Rationalization | Reality |
+|---------|---------|
+| "The diff is only a few lines, I'll just review those" | Lines live inside functions. ALWAYS read the full function. No UP = missed context. |
+| "I can tell what the callee does from its name" | Names lie. `IsUndefined` is actually `!IsValidValue`. ALWAYS inspect implementation. No DOWN = missed bugs. |
+| "Checking all sibling methods is overkill" | Sibling methods reveal the correct one. No ACROSS on DOWN = wrong predicate. |
+| "The guard is just defensive programming, it's fine" | If the callee already handles the empty/nil/zero case, the caller's guard is dead code. |
+| "Pre-validation before parsing is good practice" | If the parser returns an error AND you check it, the entire pre-validation function is redundant. |
+| "These two predicates are semantically equivalent so it's just style" | STOP. If they are equivalent, why do BOTH exist? Read the source of ALL predicates on the type. Usually one handles edge cases the other misses. |
 **RR-2.** No contradiction with duperpowers-go:go-writer / duperpowers-go:go-writer-test.
-**RR-3.** No "while you're at it" scope creep.
+**RR-3.** No "while you're at it" scope creep. Issues found within RR-1 scope (UP/DOWN/ACROSS) are in-scope; do not flag issues outside RR-1 boundaries.
 **RR-4.** Uncertain → 👀 WARN, not 💥 ERR.
 **RR-5.** Every ☠️ CRIT / 💥 ERR → addressable code (CRIT1, ERR2) + rule ID + │-wall code block with `// <- N` markers + explanations after block.
 **RR-6.** Zero ☠️ CRIT + zero 💥 ERR → ✅ PASS.
@@ -29,7 +67,7 @@ One mode per invocation. Determined by dispatch:
 - **spec** — verify step is fully delivered: every deliverable present, criteria met, no scope leak. Input: plan step + `git diff`.
 - **quality** — verify code follows duperpowers-go:go-writer / duperpowers-go:go-writer-test conventions. Input: `git diff`.
 
-For spec and quality: read changed files in full for context. Review scope = diff only.
+For spec and quality: review scope expands UP + DOWN + ACROSS from the diff per RR-1.
 
 ## Spec Mode
 
@@ -56,7 +94,7 @@ Review changed code. Skip generated and excluded files. Each check references du
 
 - **GP-3** Inline `errors.New` → should be sentinel `var errX`
 - **GP-4** Unwrapped `return err` from function/method calls → `fmt.Errorf("callee: %w", err)`
-- **ERR-3** `errors.As(err, &T{})` → should be `errorsx.Is[T]` (check `msgerrs`/`errorsx`)
+- **ERR-3** `errors.As(err, &T{})` → should be typed error check (check project's errorsx or similar package)
 - Swallowed errors: empty `if err != nil {}` or `_ = fn()` on fallible
 - Error messages: lowercase, no punctuation, no "failed to"
 
@@ -64,6 +102,7 @@ Review changed code. Skip generated and excluded files. Each check references du
 
 - **GP-1** Dead branches guarding impossible states (nil checks on DI deps)
 - **GP-2** Sequential ifs on same result → should be bare `switch {}`. Exception: side-effect annotation (log/metric without own `return`)
+- **GP-7** Every code change MUST have an obvious reason. When the reason is unclear — ALWAYS flag as 👀 WARN
 - **PS-2** Models/tasks built inside `txmanager.Do` → should be built before
 
 ### Concurrency
@@ -75,9 +114,10 @@ Review changed code. Skip generated and excluded files. Each check references du
 
 ### Layout
 
-- **LY-1** Unexported above exported, or callees above callers
+- **LY-1** Wrong ordering: type + constructor → exported methods → unexported methods. Within group: callers before callees
 - **LY-2** Interfaces in implementation files → should be in root package file. Unsorted groups → primitives → infrastructure → business
 - **LY-3** Struct fields: business deps before infrastructure → generic/primitive first
+- **LY-4** Code MUST respect layer boundaries: domain/models packages NEVER contain infrastructure knowledge — raw SQL, column names, JSONB paths, type casts (`::INT`), table references. Infrastructure logic ALWAYS lives in adapters
 
 ### Naming & Style
 
@@ -120,7 +160,7 @@ Review changed code. Skip generated and excluded files. Each check references du
 ### Ignore
 
 - gofmt / goimports whitespace and import ordering
-- Unchanged code outside diff
+- Code outside RR-1 scope (beyond UP + DOWN + ACROSS from diff)
 - Missing comments (duperpowers-go:go-writer STY-3: zero by default)
 - "Nice to have" improvements
 - Hypothetical future problems
@@ -260,7 +300,7 @@ Before outputting verdict:
 - Skipped generated / excluded files (RR-8)
 - Every ☠️ CRIT / 💥 ERR has addressable code + │-wall code block with `// <- N` markers (RR-5)
 - Issues use addressable codes (CRIT1, ERR2, WARN3), sorted by severity
-- No flags on unchanged code (RR-1)
+- Scope expansion applied: UP + DOWN + ACROSS (RR-1)
 - No contradiction with duperpowers-go:go-writer / duperpowers-go:go-writer-test (RR-2)
 - No scope creep (RR-3)
 - Spec: verified current step only, understood intent

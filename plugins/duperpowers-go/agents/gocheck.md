@@ -94,8 +94,8 @@ Facts only. Detail lines ONLY for non-passing steps.
 
 Go errors cascade. Report root causes only:
 ```
-settler.go:15: undefined: BankClient           ← ROOT (report)
-settler.go:23: c.Process undefined ...          ← downstream (skip)
+handler.go:15: undefined: HTTPClient            ← ROOT (report)
+handler.go:23: c.Process undefined ...          ← downstream (skip)
 ```
 BUILD fails → TESTS shows same errors → `❌ COMPILATION (see BUILD)`. List only assertion failures.
 
