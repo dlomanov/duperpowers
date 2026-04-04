@@ -1,10 +1,8 @@
-# Duperpowers
+# Duperpowers Go
 
-Superpowers companion — universal planning, orchestration, and Go conventions for Claude Code and Cursor.
+Superpowers companion — Go development pipeline: planning, orchestration, TDD, conventions, testing, code review.
 
-Two plugins, one marketplace:
-- **duperpowers** — universal planning, orchestration, and superpowers overrides
-- **duperpowers-go** — Go conventions, testing, and code review (optional)
+One plugin: **duperpowers-go** — everything in one package.
 
 ## Prerequisites
 
@@ -19,9 +17,7 @@ Works in both Claude Code and Cursor. Tell your AI:
 Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/INSTALL.md
 ```
 
-This will detect your platform, install superpowers (if missing), duperpowers core, optionally duperpowers-go, and offer to configure anchor rules, personal preferences, and standalone skills. Your existing CLAUDE.md sections are never duplicated — the installer is idempotent.
-
-**RTK** (token-saving CLI proxy) is not included — install separately if needed: `brew install rtk && rtk init -g`
+This will detect your platform, install superpowers (if missing), duperpowers-go, and offer to configure anchor rules, personal preferences, and standalone skills. The installer is idempotent.
 
 ## Manual Install
 
@@ -31,88 +27,64 @@ This will detect your platform, install superpowers (if missing), duperpowers co
 # Add marketplace
 claude plugin marketplace add dlomanov/duperpowers
 
-# Install core (required)
-claude plugin install duperpowers
-
-# Install Go skills (optional)
+# Install
 claude plugin install duperpowers-go
-
-# Full install (one line)
-claude plugin install duperpowers && claude plugin install duperpowers-go
 ```
 
-Install order: superpowers first, then duperpowers, then duperpowers-go.
+If old `duperpowers` (without -go) is installed: `claude plugin uninstall duperpowers`
 
 ### Cursor
 
 ```
 /add-plugin superpowers
-/add-plugin duperpowers
 /add-plugin duperpowers-go
 ```
 
-Install order: superpowers first, then duperpowers, then duperpowers-go.
-
 ## CLAUDE.md Customization
 
-The plugins work without touching your CLAUDE.md. For personal preferences (commit conventions, progress visibility, validation rules), see [`templates/claude-md-snippet.md`](templates/claude-md-snippet.md) and append the relevant sections to your `~/.claude/CLAUDE.md`.
+The plugin works without touching your CLAUDE.md. For personal preferences (commit conventions, progress visibility, validation rules), see [`templates/claude-md-snippet.md`](templates/claude-md-snippet.md) and append the relevant sections to your `~/.claude/CLAUDE.md`.
 
 ## Repository Structure
 
 ```
 duperpowers/
 ├── .claude-plugin/
-│   └── marketplace.json                   # lists both plugins
+│   └── marketplace.json
 ├── plugins/
-│   ├── duperpowers/                       # core plugin
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── .cursor-plugin/plugin.json
-│   │   ├── hooks/                         # session-start + PreToolUse hooks
-│   │   └── skills/                        # 10 universal skills
-│   └── duperpowers-go/                    # Go plugin (optional)
+│   └── duperpowers-go/
 │       ├── .claude-plugin/plugin.json
 │       ├── .cursor-plugin/plugin.json
-│       ├── hooks/                         # Go-specific context injection
+│       ├── hooks/                         # session-start + PreToolUse hooks
 │       ├── agents/gocheck.md              # Go verification agent
-│       └── skills/                        # 4 Go skills
+│       └── skills/                        # 11 skills
 ├── standalone/
-│   ├── project-commands/              # standalone skill (manual install)
-│   │   ├── SKILL.md                   # template — adapt to your project
-│   │   └── INSTALL.md                 # fetch-and-follow installer
-│   └── prompt-engineering-rules/      # standalone skill (manual install)
-│       ├── SKILL.md                   # reference for writing AI instruction files
-│       └── INSTALL.md                 # fetch-and-follow installer
+│   ├── project-commands/
+│   │   ├── SKILL.md
+│   │   └── INSTALL.md
+│   └── prompt-engineering-rules/
+│       ├── SKILL.md
+│       └── INSTALL.md
 ├── templates/
-│   └── claude-md-snippet.md               # personal preferences template
-├── INSTALL.md                             # fetch-and-follow installer
+│   └── claude-md-snippet.md
+├── INSTALL.md
 └── README.md
 ```
 
 ## Skills Reference
 
-### Core (duperpowers)
-
 | Skill | Purpose |
 |-------|---------|
-| `using-duperpowers` | Session bootstrap — override triggers, anchor rules, protocols |
-| `plan-orchestrator` | Full workflow: brainstorm → plan → assign → review → execute |
-| `plan-reviewer` | Validates plan structure, PASS/FAIL verdicts |
-| `agent-assignment` | Dependency graph + agent table after writing plans |
+| `using-duperpowers` | Session bootstrap — override triggers, skill index |
+| `plan-orchestrator` | Workflow: brainstorm → plan → assign → execute |
+| `agent-assignment` | Dependency graph, contract extraction, agent table, validation |
+| `tdd-design` | Test design during planning (case table with hints) |
 | `want-planning` | Transition to plan writing, re-reads context |
-| `gatekeeper` | Last checkpoint before coding, GO/NO-GO |
-| `superpowers-overrides` | Universal overrides for superpowers defaults |
-| `verify` | Build + minimal sufficient tests after changes |
-| `diminishing-returns` | Tracks plan revision quality, suggests proceed |
-| `mit-writer` | Hierarchical outline notes |
-
-### Go (duperpowers-go)
-
-| Skill | Purpose |
-|-------|---------|
-| `go-writer` | Go conventions, 5 golden rules, modern Go 1.22+ |
+| `superpowers-overrides` | Overrides for superpowers defaults |
+| `go-writer` | Go conventions, golden rules, modern Go 1.22+ |
 | `go-writer-test` | Go test conventions, AAA, table-driven, mocks |
 | `go-reviewer` | Two modes: spec + quality, PASS/FAIL verdicts |
-| `make-go-review` | Quick review wrapper for branch diff |
+| `make-go-review` | Deep review wrapper for branch diff |
+| `mit-writer` | Hierarchical outline notes |
 | `gocheck` (agent) | Go build/test/lint verification |
 
 ### Standalone
@@ -122,7 +94,7 @@ duperpowers/
 | `project-commands` | Make targets, test commands, go doc protocol | [INSTALL.md](standalone/project-commands/INSTALL.md) |
 | `prompt-engineering-rules` | Reference for writing CLAUDE.md, SKILL.md, AI instruction files | [INSTALL.md](standalone/prompt-engineering-rules/INSTALL.md) |
 
-Not part of plugins — install manually per project or globally.
+Not part of the plugin — install manually per project or globally.
 
 ```
 Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/project-commands/INSTALL.md
@@ -131,31 +103,26 @@ Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/du
 
 ## How Overrides Work
 
-Both plugins inject context via session-start hooks. The injections are **additive** — Claude sees both:
+The plugin injects context via session-start hook: full `using-duperpowers` skill + Go skill pairings. A PreToolUse hook fires on every Skill invocation — when a superpowers skill loads, it reminds to also invoke superpowers-overrides.
 
-1. **Core hook** injects full `using-duperpowers` skill at session start (override triggers, anchor rules, subagent injection, error escalation). Additionally, a PreToolUse hook fires on every Skill invocation — when a superpowers skill loads, it injects a reminder to also invoke superpowers-overrides
-2. **Go hook** injects: Go anchor rules, Go skill pairings with superpowers (TDD → go-writer-test, review → go-reviewer)
-
-Superpowers' own priority hierarchy ensures this works:
-1. User instructions (CLAUDE.md) — highest priority
-2. Plugin skills (superpowers + duperpowers) — override defaults
-3. Default system prompt — lowest priority
+Priority hierarchy:
+1. User instructions (CLAUDE.md) — highest
+2. Plugin skills (superpowers + duperpowers-go)
+3. Default system prompt — lowest
 
 ## For Contributors
 
 ### Adding a skill
 
-1. Create `plugins/<plugin>/skills/<skill-name>/SKILL.md`
+1. Create `plugins/duperpowers-go/skills/<skill-name>/SKILL.md`
 2. Add YAML frontmatter with `name`, `description`
-3. Use trigger patterns in description: `"Use when [condition] — [what it does]"`
+3. Use trigger patterns in description: `"Use when [condition]"`
 4. Update this README
 
 ### Testing locally
 
 ```bash
-# Install from local repo
 cd duperpowers
-claude plugin install duperpowers
 claude plugin install duperpowers-go
 
 # Start new session and verify

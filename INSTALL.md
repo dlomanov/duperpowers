@@ -1,6 +1,8 @@
-# Duperpowers — Installation Instructions
+# Duperpowers Go — Installation Instructions
 
-You are an AI assistant helping a user install the duperpowers plugin. Follow these steps exactly.
+You are an AI assistant helping a user install the duperpowers-go plugin. Follow these steps exactly.
+
+**There is only one plugin: `duperpowers-go`.** It contains everything: planning pipeline, Go conventions, TDD, code review, orchestration.
 
 **Idempotency:** This installer is safe to run multiple times. Already-installed plugins are checked for updates. Existing CLAUDE.md sections are never duplicated. Standalone skill files require user approval before overwriting.
 
@@ -45,24 +47,9 @@ claude plugin install superpowers@claude-plugins-official
 claude plugin marketplace add dlomanov/duperpowers
 ```
 
-## Step 1: Install or Update Core Plugin
+## Step 1: Install or Update Plugin
 
-Check `claude plugin list` output for `duperpowers`:
-- **Not installed** → install:
-```bash
-claude plugin install duperpowers
-```
-- **Already installed** → reinstall to pick up latest version:
-```bash
-claude plugin install duperpowers
-```
-Report to the user what version was installed.
-
-## Step 2: Ask About Go
-
-Ask the user: **"Do you work with Go? I can install Go-specific conventions, testing, and code review skills."**
-
-If yes, check `claude plugin list` output for `duperpowers-go`:
+Check `claude plugin list` output for `duperpowers-go`:
 - **Not installed** → install:
 ```bash
 claude plugin install duperpowers-go
@@ -72,9 +59,13 @@ claude plugin install duperpowers-go
 claude plugin install duperpowers-go
 ```
 Report to the user what version was installed.
+
+**If old `duperpowers` (without -go) is in the list** → remove it:
+```bash
+claude plugin uninstall duperpowers
+```
 
 Also check if `gopls-lsp` is installed (Go language intelligence). If NOT in the list:
-
 ```bash
 claude plugin install gopls-lsp@claude-plugins-official
 ```
@@ -93,27 +84,17 @@ Check if superpowers is installed. If not:
 /add-plugin superpowers
 ```
 
-## Step 1: Install Core Plugin
+## Step 1: Install Plugin
 
-Check if duperpowers is installed. If not:
-
-```
-/add-plugin duperpowers
-```
-
-If already installed, check if an update is available and offer to update.
-
-## Step 2: Ask About Go
-
-Ask the user: **"Do you work with Go? I can install Go-specific conventions, testing, and code review skills."**
-
-If yes, and duperpowers-go is NOT already installed:
+Check if duperpowers-go is installed. If not:
 
 ```
 /add-plugin duperpowers-go
 ```
 
-If already installed, offer to reinstall for the latest version.
+If already installed, check if an update is available and offer to update.
+
+**If old `duperpowers` (without -go) is installed** → remove it and install `duperpowers-go`.
 
 Now proceed to **Common Steps** below.
 
@@ -125,14 +106,18 @@ Now proceed to **Common Steps** below.
 
 These steps are the same for Claude Code and Cursor.
 
+## Step 2: Clean Up Old Installations
+
+Check if `## Duperpowers — Anchor Rules` or other `## Duperpowers —` sections exist in `~/.claude/CLAUDE.md` with old `duperpowers:` references (without `-go`). If found, remove them — they will be replaced with correct references in the next step.
+
 ## Step 3: Ask About Anchor Rules
 
-Ask the user: **"Would you like to add duperpowers anchor rules to your CLAUDE.md? This ensures Claude always invokes the right skills for Go code, reviews, and planning. Recommended."**
+Ask the user: **"Would you like to add duperpowers anchor rules to your CLAUDE.md? This ensures Claude always invokes the right skills. Recommended."**
 
 If yes:
 
 1. Read the user's current `~/.claude/CLAUDE.md` (if it exists)
-2. Check if `## Duperpowers — Anchor Rules` section already exists. **If it does — skip, tell the user it's already there.**
+2. Check if `## Duperpowers — Anchor Rules` section already exists with correct `duperpowers-go:` references. **If it does — skip, tell the user it's already there.**
 3. Insert the following block BEFORE the first line that consists solely of `@<filename>.md` (e.g. `@RTK.md`). If no such lines exist, append to the end. Ensure a blank line before and after the inserted block:
 
 ```markdown
@@ -140,15 +125,13 @@ If yes:
 
 - Go implementation → MUST invoke `duperpowers-go:go-writer` + `duperpowers-go:go-writer-test`
 - Go code review → MUST invoke `duperpowers-go:go-reviewer`
-- Any superpowers skill loads → MUST invoke `duperpowers:superpowers-overrides`
-- Multi-step implementation → MUST invoke `duperpowers:plan-orchestrator`
-- Model heuristic: think = opus, do = sonnet. Mixing in one step is an anti-pattern
+- Any superpowers skill loads → MUST invoke `duperpowers-go:superpowers-overrides`
+- Multi-step implementation → MUST invoke `duperpowers-go:plan-orchestrator`
+- Execution = sonnet. Opus for execution = user-approved exception
 - STOP and report BLOCKED after 3 failed attempts
 ```
 
 4. Show the user what was added
-
-**Note:** If duperpowers-go was NOT installed in step 2, omit lines containing `duperpowers-go:` from the block above.
 
 ## Step 4: Ask About CLAUDE.md Preferences
 
@@ -211,13 +194,13 @@ Run through each check and report results to the user:
 
 **Plugins:**
 - [ ] `superpowers` is installed
-- [ ] `duperpowers` is installed
-- [ ] `duperpowers-go` is installed (if chosen in step 2)
-- [ ] `gopls-lsp` is installed (Claude Code only, if Go was chosen)
+- [ ] `duperpowers-go` is installed
+- [ ] `gopls-lsp` is installed (Claude Code only)
+- [ ] Old `duperpowers` (without -go) is NOT installed
 
 **CLAUDE.md** (if steps 3-4 were done):
-- [ ] `## Duperpowers — Anchor Rules` section exists in `~/.claude/CLAUDE.md`
-- [ ] `## Duperpowers — Personal Preferences` section exists in `~/.claude/CLAUDE.md`
+- [ ] `## Duperpowers — Anchor Rules` section exists with `duperpowers-go:` references
+- [ ] No old `duperpowers:` references (without -go)
 - [ ] Sections are placed BEFORE `@<filename>.md` import lines (if any)
 
 **Standalone skills** (if step 5 was done):
@@ -225,4 +208,4 @@ Run through each check and report results to the user:
 
 Report the checklist with pass/fail for each item. If anything failed, offer to fix it.
 
-Tell the user: **"Installation complete. Start a new session to activate duperpowers. You can verify by asking 'Tell me about your duperpowers'."**
+Tell the user: **"Installation complete. Start a new session to activate duperpowers-go. You can verify by asking 'Tell me about your duperpowers'."**
