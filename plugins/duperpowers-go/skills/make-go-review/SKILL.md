@@ -1,10 +1,10 @@
 ---
 name: make-go-review
-description: "Deep Go code review of current branch diff against origin/master (*.go files)"
+description: "Deep Go code review of current branch diff against base branch (*.go files)"
 disable-model-invocation: true
 argument-hint: [additional context]
 ---
 
-1. /duperpowers-go:go-reviewer make deep review of current branch diff against origin/master $ARGUMENTS
+1. /duperpowers-go:go-reviewer make deep review of current branch diff against base branch $ARGUMENTS
 2. Write TL;DR — brief summary of what changed and why (3-5 sentences max)
-3. /duperpowers:mit-writer full detailed explanation of all changes
+3. /duperpowers-go:mit-writer full detailed explanation of all changes

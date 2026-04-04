@@ -21,7 +21,7 @@ CLAUDE.md rules lose priority as conversation grows.
 - verification, checkpoints
 - commits in plans, user involvement
 
-**Step 2 — STUDY.** Invoke each relevant skill via Skill tool. ALWAYS invoke `plan-orchestrator` — it contains the full planning workflow, TDD structure, model selection, and orchestration pipeline.
+**Step 2 — STUDY.** Invoke each skill via Skill tool. ALWAYS invoke all three: `duperpowers-go:plan-orchestrator`, `duperpowers-go:tdd-design`, `duperpowers-go:agent-assignment`.
 
 **Step 3 — REPORT.** Announce to user:
 - **Rules:** key planning rules you will follow

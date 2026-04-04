@@ -91,9 +91,3 @@ BAD — prose, no hierarchy, capitalized, periods:
   lease to expire before granting it to another server. Leases
   prevent split-brain by ensuring only one primary at a time.
 
-## Process
-
-1. Identify 3-7 top-level questions/concepts structuring the topic
-2. Build indent trees (claim => evidence => example => consequence)
-3. +++ to group distinct subtopics
-4. Output ```text block

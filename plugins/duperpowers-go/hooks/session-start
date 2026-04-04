@@ -1,21 +1,13 @@
 #!/usr/bin/env bash
-# SessionStart hook — injects duperpowers Go context
+# SessionStart hook — injects duperpowers-go context
 
 set -euo pipefail
 
-CONTEXT='<IMPORTANT>
-## Duperpowers Go — Active Context
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-### Go Skill Pairings with Superpowers
-When using superpowers:test-driven-development with Go code (*.go) → also invoke duperpowers-go:go-writer-test
-When using superpowers:requesting-code-review on Go code → also invoke duperpowers-go:go-reviewer (spec or quality)
-
-### Go Anchor Rules
-- Writing Go code (*.go files) → invoke duperpowers-go:go-writer
-- Writing Go tests (*_test.go files) → invoke duperpowers-go:go-writer-test
-- Go code review → invoke duperpowers-go:go-reviewer
-- Go verification → delegate to duperpowers-go:gocheck agent
-</IMPORTANT>'
+# Read the using-duperpowers skill content
+using_skill=$(cat "${PLUGIN_ROOT}/skills/using-duperpowers/SKILL.md" 2>&1 || echo "Error reading using-duperpowers skill")
 
 escape_for_json() {
     local s="$1"
@@ -27,14 +19,15 @@ escape_for_json() {
     printf '%s' "$s"
 }
 
-escaped=$(escape_for_json "$CONTEXT")
+escaped=$(escape_for_json "$using_skill")
+session_context="<IMPORTANT>\nYou have duperpowers-go.\n\n**Below is the full content of your 'duperpowers-go:using-duperpowers' skill — your guide to all duperpowers-go skills. For all other skills, use the Skill tool:**\n\n${escaped}\n\n### Go Skill Pairings with Superpowers\nWhen using superpowers:test-driven-development with Go code (*.go) → also invoke duperpowers-go:go-writer-test\nWhen using superpowers:requesting-code-review on Go code → also invoke duperpowers-go:go-reviewer (spec or quality)\n</IMPORTANT>"
 
 if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
-  printf '{\n  "additional_context": "%s"\n}\n' "$escaped"
+  printf '{\n  "additional_context": "%s"\n}\n' "$session_context"
 elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
-  printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$escaped"
+  printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$session_context"
 else
-  printf '{\n  "additional_context": "%s"\n}\n' "$escaped"
+  printf '{\n  "additional_context": "%s"\n}\n' "$session_context"
 fi
 
 exit 0

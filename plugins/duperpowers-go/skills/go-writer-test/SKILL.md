@@ -244,7 +244,7 @@ m.locker.EXPECT().
 
 ## Data
 
-**TD-1. Test data.** gofakeit for pass-through values the code doesn't validate. Realistic hardcoded values for anything that affects behavior.
+**TF-1. Test data.** gofakeit for pass-through values the code doesn't validate. Realistic hardcoded values for anything that affects behavior.
 
 ```go
 // BAD — random duration obscures intent, random enum is meaningless
@@ -275,7 +275,7 @@ m.locker.EXPECT().
 | Amounts | `testx.CreateMoney()` | — |
 | Counters, indices | — | `int64(1)`, `int64(2)` |
 
-**TD-2. Shared values.** Values shared across cases → `var(...)` block before table (see duperpowers-go:go-writer SN-3). Infrastructure constants (e.g., `bucket`) → package-level `const`. Each case shows only what VARIES.
+**TF-2. Shared values.** Values shared across cases → `var(...)` block before table (see duperpowers-go:go-writer SN-3). Infrastructure constants (e.g., `bucket`) → package-level `const`. Each case shows only what VARIES.
 
 ```go
 // BAD — duplicated literals

@@ -116,7 +116,7 @@ Review changed code. Skip generated and excluded files. Each check references du
 
 - **LY-1** Wrong ordering: type + constructor → exported methods → unexported methods. Within group: callers before callees
 - **LY-2** Interfaces in implementation files → should be in root package file. Unsorted groups → primitives → infrastructure → business
-- **LY-3** Struct fields: business deps before infrastructure → generic/primitive first
+- **LY-3** Struct fields: generic/primitive first, specific/business last
 - **LY-4** Code MUST respect layer boundaries: domain/models packages NEVER contain infrastructure knowledge — raw SQL, column names, JSONB paths, type casts (`::INT`), table references. Infrastructure logic ALWAYS lives in adapters
 
 ### Naming & Style
@@ -143,7 +143,7 @@ Review changed code. Skip generated and excluded files. Each check references du
 - **TM-2** Inline mock chains → break after `EXPECT().`, one method per line
 - **TM-3** `t.Helper()` in `makeSUT`/`makeService`/`makeMocks` → never add, these are unconditional exceptions
 - **TT-5** Compact one-line struct literals → always multi-line
-- **TD-2** Repeated literals across cases → shared `var(...)` block
+- **TF-2** Repeated literals across cases → shared `var(...)` block
 - **TS-1** Missing `t.Parallel()`. `context.Background()` → `t.Context()`
 - **TS-2** Wrong naming: `happy_path` → `"success"`. Underscores in case names → spaces
 - **TT-4** Case comments restating name → should explain WHY (Russian). Do NOT flag missing comments

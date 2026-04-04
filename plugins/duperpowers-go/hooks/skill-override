@@ -20,7 +20,7 @@ fi
 # Only trigger for superpowers skills, skip our own
 case "$skill_name" in
   superpowers:*)
-    context="OVERRIDE REMINDER: You are loading ${skill_name}. You MUST ALSO invoke duperpowers:superpowers-overrides (if not already invoked in this turn)."
+    context="OVERRIDE REMINDER: You are loading ${skill_name}. You MUST ALSO invoke duperpowers-go:superpowers-overrides."
 
     escape_for_json() {
       local s="$1"

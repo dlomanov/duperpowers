@@ -287,10 +287,6 @@ type Handler struct {
 
 ## Errors
 
-**ERR-1. Sentinel by default.** See GP-3.
-
-**ERR-2. Wrap = stacktrace.** See GP-4.
-
 **ERR-3. `errorsx.Is[T]` over `errors.As`.** Check if your project has an `errorsx` or similar typed-errors package. Type parameter = pointer type (because only `*T` implements `error`).
 
 ```go
@@ -423,7 +419,7 @@ if err = txManager.Do(ctx, bucket, func(ctx context.Context) error {
 
 - **GP-2** Bare switch for classification — not if-else chains
 - **GP-4** Wrap errors with callee name — `fmt.Errorf("callee: %w", err)`
-- **ERR-1** Sentinel errors by default — `var errX = errors.New(...)`
+- **GP-3** Sentinel errors by default — `var errX = errors.New(...)`
 - **SN-3** 3+ variables → `var(...)` block
 - **STY-1** Line > 120 chars or > 3 args → one per line
 
