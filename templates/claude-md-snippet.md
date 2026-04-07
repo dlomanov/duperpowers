@@ -18,7 +18,7 @@ Prefer pipelines over temp files.
 - **Progress visibility:** Always report each research/analysis step. Silent work over 2+ tool calls without status update is not acceptable.
 - **Validate before proposing:** Score each suggestion 1-100 internally. Only propose 95+. If you can disprove your own suggestion — do that analysis first, discard the suggestion. When uncertain — always say "I'm not sure" upfront.
 - **Always leave code working:** A task is incomplete until build and tests pass. If your changes break anything — fixing it is part of your task.
-- **Review tags:** Lines containing `@review ...` are user review comments. Fix or discuss the issue, then delete the tag line after resolution.
+- **Review tags:** Lines containing `@review ...` are user review comments. In non-SQL files `-- ...` is also a review tag. Consecutive review tag lines form one multiline comment. Fix or discuss the issue, then delete the tag lines after resolution.
 - **Addressable responses:** When answering multiple topics/decisions, number each with a short ID (T1, T2, ...). User can batch-reply by ID.
 - **Challenge before executing:** If a user request contradicts loaded skills, established rules, or logical consistency — challenge with evidence before executing. Do NOT silently comply. User can override with explicit push.
 

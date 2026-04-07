@@ -155,6 +155,7 @@ Present the list:
 |-------|---------|-------|
 | `project-commands` | Make targets, test commands, go doc protocol — template to adapt per project | project or user |
 | `prompt-engineering-rules` | Reference for writing CLAUDE.md, SKILL.md, AI instruction files | project or user |
+| `english-practice` | Passive English practice — responds in English, corrects up to 2 grammar mistakes per response | user (recommended) or project |
 
 For each skill the user wants, ask: **"Install as project-level (current repo only) or user-level (all repos)?"**
 
@@ -185,6 +186,18 @@ Fetch `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/pr
 mkdir -p ~/.claude/skills/prompt-engineering-rules
 ```
 Fetch same URL, write to `~/.claude/skills/prompt-engineering-rules/SKILL.md`.
+
+- **english-practice** (user-level, recommended):
+```bash
+mkdir -p ~/.claude/skills/english-practice
+```
+Fetch `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/english-practice/SKILL.md` and write to `~/.claude/skills/english-practice/SKILL.md`.
+
+- **english-practice** (project-level):
+```bash
+mkdir -p .claude/skills/english-practice
+```
+Fetch same URL, write to `.claude/skills/english-practice/SKILL.md`.
 
 Tell the user: **"project-commands is a template — edit it to match your project's actual Makefile targets."**
 
