@@ -7,4 +7,3 @@ argument-hint: [additional context]
 
 1. /duperpowers-go:go-reviewer make deep review of current branch diff against base branch $ARGUMENTS
 2. Write TL;DR — brief summary of what changed and why (3-5 sentences max)
-3. /duperpowers-go:mit-writer full detailed explanation of all changes
