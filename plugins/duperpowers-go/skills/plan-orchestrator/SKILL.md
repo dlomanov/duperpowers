@@ -34,6 +34,26 @@ Go verification: delegate to duperpowers-go:gocheck agent.
 
 </IMPORTANT>
 
+## What & Why (required first section)
+
+Plans MUST start with a "## What & Why" section before any steps.
+
+### Problem
+What's broken or missing. 1-3 sentences.
+
+### Solution
+Approach summary. 1-3 sentences. May reference packages/layers, but no code.
+
+### What changes
+Numbered list, max 7 items. Each item = one behavioral change + why.
+Not files, not functions — what changes from the system's perspective.
+
+### Out of scope
+What this plan intentionally does NOT touch and why. Max 5 items.
+
+Written in plain English. No agent metadata, no code samples.
+Human must be able to review this section in under 60 seconds.
+
 ## Commits
 
 Agent MUST propose commit messages in the plan. Format: `[TICKET-ID] краткое описание на русском`.
