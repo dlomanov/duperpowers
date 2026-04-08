@@ -20,14 +20,27 @@ ANY task that produces a plan or involves multi-step implementation. No size thr
 
 ```
 0. superpowers:brainstorming → spec
-1. want-planning → re-read CLAUDE.md, invoke this skill, report readiness
-2. superpowers:writing-plans → plan with full test design inline + context fields
-3. agent-assignment skill → DG → CO → agents → validation → PASS/FAIL
+1. superpowers:writing-plans → plan with full test design inline + context fields
+2. agent-assignment skill → DG → CO → agents → validation → PASS/FAIL
 → user reviews: plan + test designs + agent assignments
   If validation FAILs → orchestrator presents each finding WITH own assessment. Only user can approve.
+3. plan-executability-review (opus subagent) → validate plan is solid for sonnet execution
+   - Input: plan + agent table
+   - Checks: exported/unexported consistency, import completeness,
+     insertion point precision, sonnet executability (no "figure out" / "decide")
+   - Output: PASS / FAIL + issues list
+   - On FAIL: return to step 1 with issues, re-run steps 2-3
 4. superpowers:subagent-driven-development OR superpowers:executing-plans → execute per agent table
-5. Final review: opus + duperpowers-go:go-reviewer on full branch diff vs base branch
-   (user handles commits, push, PR)
+   - Parallel agents: implement-only, do NOT commit (see Parallel Stage Commits)
+   - Sequential barriers: make mock/gen between parallel stages only (see Sequential Barriers)
+   - After each parallel stage: orchestrator makes compound commit
+5. opus branch review (subagent, duperpowers-go:go-reviewer spec+quality) on full branch diff
+   - CRIT/ERR → dispatch sonnet fix agent (file:line + description) → gocheck → re-review
+   - Max 2 autofix iterations, then escalate to user (T3)
+   - WARN/INFO only → report to user, done
+6. execution diagnostics — orchestrator reviews full message history (planning + execution)
+   - Output: plans/diagnostics-{ticket}.md
+   - Content: what went wrong in pipeline, recommendations for workflow improvement
 ```
 
 Go verification: delegate to duperpowers-go:gocheck agent.
@@ -65,6 +78,29 @@ commit: [PROJ-42] реализует CreateOrder
 ```
 
 User reviews and adjusts during plan review. If ticket ID unknown — ask user.
+
+## Parallel Stage Commits
+
+Parallel agents implement-only — they do NOT commit. After each parallel stage completes, orchestrator commits all changes in one compound commit.
+
+Commit message format: `[TICKET-ID] stage N: краткое описание каждого deliverable`.
+
+Example:
+```
+commit: [ACQ-19510] stage 2: order_view_update, refund_fiscal_receipt, payment_callback
+```
+
+Sequential agents (step 0, single-agent stages) commit normally per step.
+
+## Sequential Barriers
+
+Commands that regenerate shared files (`make mock`, `make gen`, any global code generation) are sequential barriers.
+
+Rules:
+- Sequential barrier MUST complete before any parallel stage that depends on its output
+- Parallel agents MUST NOT run global generation commands
+- Agent prompt for parallel steps: "Mocks already regenerated. Do NOT run make mock / make gen."
+- If implementation changes require re-generation → checkpoint agent runs it between parallel stages
 
 ## Task Plan Format
 
@@ -206,7 +242,33 @@ For every agent before dispatching:
 
 Light pipeline (CRUD, config, mechanical): steps 1-2 only.
 Full pipeline: steps 1-4.
-Final opus review with go-reviewer on full branch diff after ALL agents.
+
+Parallel agents: no commit step in pipeline. Orchestrator handles compound commit after stage completes.
+Sequential agents: commit normally at step 5.
+
+### Post-Execution Pipeline
+
+After ALL agents complete:
+
+```
+1. Dispatch opus branch reviewer (subagent)
+   - Full branch diff vs base branch
+   - duperpowers-go:go-reviewer spec + quality
+   - Scope: entire changeset, not per-agent
+
+2. If CRIT/ERR found:
+   - Dispatch sonnet fix agent with exact file:line + issue description
+   - Run duperpowers-go:gocheck
+   - Re-dispatch opus reviewer
+   - Max 2 iterations, then escalate to user (T3)
+
+3. If WARN/INFO only: report to user, done
+
+4. Execution diagnostics (orchestrator, not subagent)
+   - Review full message history: planning decisions, agent execution, issues encountered
+   - Write plans/diagnostics-{ticket}.md
+   - Content: pipeline problems, agent failures, timing issues, workflow recommendations
+```
 
 ### Error Escalation
 
@@ -244,5 +306,10 @@ Agent fails repeatedly → STOP, report to user with diagnosis.
 - Orchestrator reads agent table, never re-analyzes context_needs
 - STOP and report BLOCKED after 3 failed attempts
 - Agent proposes commit messages in plan, user reviews
+- Parallel agents do NOT commit — orchestrator makes compound commit after each parallel stage
+- make mock / make gen = sequential barrier, never inside parallel stage
+- Opus subagent validates plan executability before execution (step 3)
+- Opus branch review + autofix loop after all agents (step 5)
+- Orchestrator writes execution diagnostics to plans/diagnostics-{ticket}.md (step 6)
 
 </IMPORTANT>

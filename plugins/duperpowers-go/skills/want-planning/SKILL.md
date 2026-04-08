@@ -1,6 +1,7 @@
 ---
 name: want-planning
-description: "Use when transitioning to plan writing — after brainstorming, when task/spec is ready, or when user explicitly wants to start planning. Refreshes planning context from CLAUDE.md, studies relevant skills, reports readiness"
+description: "Focus recovery — re-reads CLAUDE.md and planning skills when context has drifted in long sessions"
+user_invocable: true
 ---
 
 <CRITICAL>

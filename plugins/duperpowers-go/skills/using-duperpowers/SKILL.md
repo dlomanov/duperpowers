@@ -30,7 +30,7 @@ MUST invoke `duperpowers-go:superpowers-overrides` when any superpowers skill lo
 | Task | Invoke |
 |------|--------|
 | Planning features/tasks | duperpowers-go:plan-orchestrator |
-| Transitioning to plan writing | duperpowers-go:want-planning |
+| Focus recovery (user-invoked only) | duperpowers-go:want-planning |
 | Writing test design in plan | duperpowers-go:tdd-design |
 | Assigning agents + validating plan | duperpowers-go:agent-assignment |
 | Superpowers skill loaded | duperpowers-go:superpowers-overrides |

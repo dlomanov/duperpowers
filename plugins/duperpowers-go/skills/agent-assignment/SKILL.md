@@ -28,6 +28,8 @@ Plan document with steps per plan-orchestrator Task Plan Format: `files_read`, `
 
 Read `context_needs` for every step. Create directed edges. Verify DAG — cycle => STOP, report to user.
 
+**DG-1. Sequential barriers.** Steps containing global generation commands (`make mock`, `make gen`, or any command that regenerates shared files) MUST be sequential barrier nodes. All parallel steps that depend on generated output MUST wait for the barrier to complete. A barrier step cannot be placed inside a parallel stage.
+
 ### Step 2. Classify Context Transfer (CT)
 
 For each edge:
@@ -71,6 +73,7 @@ CO does NOT apply when: chain < 3 steps, dependencies through logic, contracts a
 **GR-5.** When in doubt CT-1 vs CT-2 => default to separate (AA-3).
 **GR-6.** Mixed incoming (artifact + accumulated) => chain with accumulated upstream. Artifact passed in prompt.
 **GR-7.** Checkpoint (gocheck) => always separate sonnet agent.
+**GR-8.** Parallel agents implement-only — do NOT commit. Orchestrator makes compound commit after each parallel stage completes.
 
 | Rationalization | Reality |
 |----------------|---------|
@@ -129,6 +132,10 @@ Final validation before presenting to user. Check all categories:
 - VL-21. Checkpoints after each TDD cycle => WARN
 - VL-22. Contract step 0 files not written by implementation steps => CRIT
 
+**Parallel Execution:**
+- VL-23. Parallel agents do not contain `make mock` / `make gen` / global generation => CRIT
+- VL-24. Parallel agents do not commit (GR-8) — commit field empty or "orchestrator" => ERR
+
 **Severity:** CRIT/ERR => FAIL. WARN only => PASS. Present findings with own assessment — user decides.
 
 **Verdict format:**
@@ -174,11 +181,12 @@ For worked examples, read `agent-assignment-examples.md` in this skill directory
 
 ## Integration
 
-Runs as step 3 in plan-orchestrator workflow:
+Runs as step 2 in plan-orchestrator workflow:
 ```
-2. writing-plans => plan with steps + context fields
-3. agent-assignment => this skill (DG → CO → GR → MA → AI → VL)
+1. writing-plans => plan with steps + context fields
+2. agent-assignment => this skill (DG → CO → GR → MA → AI → VL)
 → user reviews
+3. plan-executability-review (opus subagent) => sonnet executability validation
 4. execute per agent table
 ```
 
@@ -192,7 +200,9 @@ Runs as step 3 in plan-orchestrator workflow:
 - CO applied where chain 3+ with type-only dependencies
 - Default sonnet. Opus = user-approved exception (MA-1, MA-3)
 - Test design is planning artifact, not agent step (MA-5)
-- Validation covers: structural, agent assignment, TDD, sufficiency (VL)
+- Validation covers: structural, agent assignment, TDD, sufficiency, parallel execution (VL)
 - Could not classify an edge => asked user (AA-5)
+- Global generation (make mock/gen) = sequential barrier in DG (DG-1)
+- Parallel agents implement-only, no commits (GR-8, VL-24)
 
 </IMPORTANT>
