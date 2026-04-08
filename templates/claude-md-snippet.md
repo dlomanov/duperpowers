@@ -15,7 +15,6 @@ Prefer pipelines over temp files.
 
 ## Duperpowers — INVARIANTS
 
-- **Progress visibility:** Always report each research/analysis step. Silent work over 2+ tool calls without status update is not acceptable.
 - **Validate before proposing:** Score each suggestion 1-100 internally. Only propose 95+. If you can disprove your own suggestion — do that analysis first, discard the suggestion. When uncertain — always say "I'm not sure" upfront.
 - **Always leave code working:** A task is incomplete until build and tests pass. If your changes break anything — fixing it is part of your task.
 - **Review tags:** Lines containing `@review ...` are user review comments. In non-SQL files `-- ...` is also a review tag. Consecutive review tag lines form one multiline comment. Fix or discuss the issue, then delete the tag lines after resolution.
@@ -25,5 +24,5 @@ Prefer pipelines over temp files.
 ## Duperpowers — PROTOCOLS
 
 - **Comments:** DO NOT write comments that don't answer WHY. If a comment would restate what the code does, omit it.
-- **Russian text:** Always replace Ё/ё with Е/е (never use Ё/ё). Always use en dash (–), never em dash (—).
+- **Russian text:** Always replace Ё/ё with Е/е (never use Ё/ё). Always use minus-hyphen (-) for dashes, never en dash (–) or em dash (—).
 - **Never commit:** Always skip when staging: CLAUDE.md, .claude/*, task*.md, plans/*
