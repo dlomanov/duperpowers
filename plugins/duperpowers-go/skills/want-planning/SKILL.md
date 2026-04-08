@@ -27,15 +27,3 @@ CLAUDE.md rules lose priority as conversation grows.
 **Step 3 — REPORT.** Announce to user:
 - **Rules:** key planning rules you will follow
 - **Skills:** list of skills invoked and confirmed
-
-## Anti-rationalization
-
-| Rationalization | Reality |
-|---------|---------|
-| "I already read CLAUDE.md at session start" | Thousands of tokens ago. Re-read now |
-| "I remember the planning rules" | Prove it — Step 3 exists for this |
-| "I can skip straight to writing-plans" | writing-plans doesn't force CLAUDE.md re-read. This skill does |
-
-<CRITICAL>
-Re-read CLAUDE.md with Read tool. Announce rules. Enter plan writing. Every time. No shortcuts.
-</CRITICAL>

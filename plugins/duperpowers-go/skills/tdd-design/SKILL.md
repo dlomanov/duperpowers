@@ -12,7 +12,7 @@ description: "Use when writing test design during planning phase — before any 
 **TD-1.** Test design is a planning artifact. Opus writes it, user reviews it, sonnet implements it.
 **TD-2.** Minimal intervention. Prefer adding cases to existing tests over creating new files. Prefer modifying existing cases over adding new ones. New test file only when no suitable test exists.
 **TD-3.** Invoke go-writer-test AND go-writer before writing hints. Go code in hints follows go-writer conventions. Test patterns follow go-writer-test conventions. Sonnet copies patterns from your examples.
-**TD-4.** Ask user before writing: etalon test file (best test in the project to use as pattern — MUST ask, never auto-pick), code reference file (SUT interface), comments on cases.
+**TD-4.** Ask user before writing: reference test file (best test in the project to use as pattern — MUST ask, never auto-pick), code reference file (SUT interface), comments on cases.
 
 </IMPORTANT>
 
@@ -26,8 +26,6 @@ Before writing cases, opus determines the approach:
 | Test file exists, missing coverage | Add cases to existing table |
 | Test file exists, cases need updating (new field, changed behavior) | Modify existing cases |
 | Multiple behaviors in one function | One table per behavior, or one table with clear case grouping |
-
-**REQUIRED:** Invoke go-writer-test + go-writer before writing design.
 
 ## Test Case Table
 
@@ -95,27 +93,12 @@ Add after "repo error":
 
 ## Integration
 
-Invoked by opus during planning (plan-orchestrator step 2, writing-plans).
-
-```
-Planning phase:
-  1. Opus invokes tdd-design + go-writer-test
-  2. Opus asks user: reference test file, SUT interface, comments
-  3. Opus writes test case table with hints inline in plan
-  4. User reviews test design
-
-Execution phase:
-  sonnet reads test design from plan → writes _test.go → RED → writes impl → GREEN
-```
+Invoked by plan-orchestrator during step 1 (writing-plans).
 
 <IMPORTANT>
 
 ## Anchor
 
-- Test design = planning artifact, not execution step (TD-1)
-- Minimal intervention: modify > add > new file (TD-2)
-- Hints contain critical code: mock setup, error types, shared vars, assertions
-- Case order: simple → complex → success LAST
-- Apply go-writer-test conventions in hints — sonnet copies your patterns (TD-3)
+Most violated: TD-1 (planning artifact, not execution step), TD-3 (invoke go-writer-test before writing hints), TD-4 (ask user for reference test file).
 
 </IMPORTANT>

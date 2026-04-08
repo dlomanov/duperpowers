@@ -25,7 +25,8 @@ Step 2: Tests + implementation for converter
 | sonnet-2 | sonnet | 2     | impl  | —                  | —        | go-writer, go-writer-test|
 | sonnet-3 | sonnet | chk   | chk   | sonnet-1, sonnet-2 | —        | gocheck                  |
 
-Parallel: sonnet-1, sonnet-2 => sonnet-3 (checkpoint)
+Parallel: sonnet-1, sonnet-2 (implement-only, no commits) => sonnet-3 (checkpoint)
+Compound commit: orchestrator commits after parallel stage
 
 VALIDATION: PASS
 FINDINGS: (none)
@@ -86,7 +87,8 @@ step 0 ──CT-1──→ step 2 [sonnet-3]    checkpoint [sonnet-5]
 | sonnet-5 | sonnet | chk   | chk   | sonnet-2, sonnet-3, sonnet-4 | —                      | gocheck                  |
 
 Sequential: sonnet-1
-Parallel: sonnet-2, sonnet-3, sonnet-4 => sonnet-5 (checkpoint)
+Parallel: sonnet-2, sonnet-3, sonnet-4 (implement-only, no commits) => sonnet-5 (checkpoint)
+Compound commit: orchestrator commits after parallel stage with "[TICKET] stage 2: refund handler, fiscal receipt, GRPC converter"
 ```
 
 ## Example C: Accumulated context (CT-2, inline chain)

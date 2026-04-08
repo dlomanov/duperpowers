@@ -11,7 +11,7 @@ description: "Project Go conventions for *.go files. MUST invoke for any Go impl
 
 Non-negotiable. If code matches BAD — fix it.
 
-**GP-1. No dead branches.** If upstream guard or DI eliminates a state, skip handling below.
+**GP-1. No dead branches.** If constructor or DI guarantees non-nil/non-zero, skip nil/zero checks downstream.
 
 ```go
 // BAD — DI guarantees non-nil
@@ -60,7 +60,7 @@ case err != nil:
 }
 ```
 
-**EXCEPTION:** Side-effect annotation — `errors.Is` inside `if err != nil` for log/metric only, without its own `return`. Nested if keeps tighter scope:
+**EXCEPTION:** When `errors.Is` is used only for logging/metrics (no separate return), keep it as nested `if` inside `if err != nil`:
 
 ```go
 // GOOD — annotation, same return path
@@ -95,8 +95,6 @@ var ErrOrderNotFound = errors.New("order not found")  // exported, cross-package
 
 **GP-4. Wrap = stacktrace.** Every error from function/method MUST be wrapped with callee name.
 
-**GP-7. Every code change MUST have an obvious reason.** Do not introduce changes that have no clear purpose — no dead assignments, no split-then-rejoin chains, no no-op transformations.
-
 ```go
 return fmt.Errorf("parseConfig: %w", err)      // function
 return fmt.Errorf("validate: %w", err)          // own method
@@ -118,6 +116,8 @@ if err := r.DoTx(ctx, bucket, func(ctx context.Context) error {
 ```
 
 Skip wrapping: local closures, single obvious call site.
+
+**GP-7. Every code change MUST have an obvious reason.** No dead assignments, no split-then-rejoin chains, no no-op transformations.
 
 **GP-5. Scope drives naming.** Short life = short name. Long life = descriptive name. Position in function signals lifetime.
 

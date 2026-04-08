@@ -1,6 +1,6 @@
 ---
 name: agent-assignment
-description: "MUST invoke after writing a plan (step 3 in workflow). Builds dependency graph, optimizes for parallelism, assigns agents, validates plan. Produces execution-ready artifacts."
+description: "MUST invoke after writing a plan (step 2 in workflow). Builds dependency graph, assigns agents, validates plan."
 ---
 
 # Agent Assignment
@@ -55,10 +55,8 @@ Optimizes the plan for parallel execution. Analyzes the dependency graph for seq
 **CO-3. Rewrite dependencies.** Update `context_needs` to reference step 0. Recalculate DG edges.
 
 **CO-4. Auto vs approval.**
-- **Auto** (all conditions): chain 3+, ALL dependencies through types/signatures, after extraction ALL steps parallel
-- **Approval** (any): mixed dependencies, some steps still sequential after extraction, unclear contract boundary
-
-Auto: apply, note in output. Approval: show extraction, ask user.
+Auto: chain 3+ AND all deps are type/signature AND extraction makes all steps parallel. Apply, note in output.
+Otherwise: show extraction, ask user.
 
 **CO-5.** Implementation steps MUST NOT modify contracts from step 0. Need a new field → BLOCKED.
 
@@ -107,7 +105,6 @@ Final validation before presenting to user. Check all categories:
 - VL-2. No orphan references in `context_needs` => CRIT
 - VL-3. Single deliverable per step => ERR
 - VL-4. `context_needs` + `context_shares` present on every step => ERR
-- VL-5. No file conflicts between parallel agents => CRIT
 
 **Agent Assignment:**
 - VL-6. CT-2 accumulated edges on same agent => ERR if split
@@ -136,7 +133,7 @@ Final validation before presenting to user. Check all categories:
 - VL-23. Parallel agents do not contain `make mock` / `make gen` / global generation => CRIT
 - VL-24. Parallel agents do not commit (GR-8) — commit field empty or "orchestrator" => ERR
 
-**Severity:** CRIT/ERR => FAIL. WARN only => PASS. Present findings with own assessment — user decides.
+**Severity:** CRIT/ERR => FAIL, must fix before execution. WARN => PASS, report to user.
 
 **Verdict format:**
 ```
@@ -194,15 +191,6 @@ Runs as step 2 in plan-orchestrator workflow:
 
 ## Anchor
 
-- All 3 artifacts + validation verdict present (AA-1)
-- Every step in exactly one agent
-- Every edge has CT-1/CT-2 classification
-- CO applied where chain 3+ with type-only dependencies
-- Default sonnet. Opus = user-approved exception (MA-1, MA-3)
-- Test design is planning artifact, not agent step (MA-5)
-- Validation covers: structural, agent assignment, TDD, sufficiency, parallel execution (VL)
-- Could not classify an edge => asked user (AA-5)
-- Global generation (make mock/gen) = sequential barrier in DG (DG-1)
-- Parallel agents implement-only, no commits (GR-8, VL-24)
+Most violated: AA-1 (all 3 artifacts), AA-5 (ask user on unclear edges), DG-1 (sequential barriers), GR-8 (parallel no commits), MA-1 (default sonnet), MA-5 (test design ≠ agent step), VL-12 (no file overlap).
 
 </IMPORTANT>

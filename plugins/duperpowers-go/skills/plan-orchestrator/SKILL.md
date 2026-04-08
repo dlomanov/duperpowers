@@ -106,7 +106,7 @@ Rules:
 
 Each step in the plan:
 - **agent**: assigned by agent-assignment (e.g., sonnet-1, sonnet-2)
-- **files_read**: exact file paths the agent reads (only these, nothing else)
+- **files_read**: primary input file paths the agent reads
 - **files_write**: exact file paths the agent creates/modifies
 - **what**: one-sentence deliverable
 - **criteria**: how to verify (RED → GREEN for TDD steps)
@@ -117,11 +117,7 @@ Each step in the plan:
 - **context_needs**: what this step requires from prior steps (empty = independent)
 - **context_shares**: what this step produces for later steps
 
-<CRITICAL>
-
-Ambiguity in execution steps is a plan bug. Words like "figure out", "decide", "choose", "explore" mean opus failed to resolve this during planning.
-
-</CRITICAL>
+Ambiguity in execution steps is a plan bug. "figure out", "decide", "choose", "explore" = opus failed to resolve during planning.
 
 ### Critical Code
 
@@ -148,17 +144,24 @@ Tests FIRST. No exceptions. MUST invoke `duperpowers-go:tdd-design` when writing
 </CRITICAL>
 
 Plan structure:
-1. **Test design** (planning phase) — opus invokes tdd-design, writes test case table with hints inline in plan. User reviews before execution.
+1. **Test design** (during planning, not execution) — opus invokes tdd-design, writes test case table with hints inline in plan. User reviews before execution.
 2. **Tests + implementation** (single sonnet agent) — RED → GREEN cycle:
    - Write tests from plan's test design → run → verify RED
    - If tests pass on empty code → BLOCKED
    - Write implementation → run → verify GREEN
    - Cover error branches in the same pass
-   - Commit separately: tests first, then implementation
+   - Sequential agents: commit tests first, then implementation separately
+   - Parallel agents: no commits (orchestrator handles after stage)
 3. **Checkpoint** (sonnet, duperpowers-go:gocheck)
 
-Written tests are never deleted. If tests conflict with implementation → STOP, ask user.
-If tests+impl > 300 lines total, split into two sonnet agents by scope (for multi-step inline chains limit is 200 lines, see agent-assignment MA-2).
+Tests from plan's test design are the spec. Sonnet can fix test setup/mechanics but MUST NOT weaken assertions or change what tests verify. If tests conflict with implementation → BLOCKED, ask user.
+
+| Rationalization | Reality |
+|----------------|---------|
+| "Tests need small adjustments to pass" | Tests are the spec. Fix implementation, not assertions. Setup fixes OK. Weakening conditions = BLOCKED |
+| "This assertion is too strict" | Plan's test design was reviewed by user. Changing it = overriding user's decision |
+If tests+impl > 300 lines total, split into two sonnet agents by scope.
+Multi-step inline chains: limit 200 lines (see agent-assignment MA-2).
 
 ## Skill Assignment
 
@@ -210,11 +213,10 @@ For every agent before dispatching:
    - **Clear** (sonnet-safe): exact scope, one deliverable, concrete criteria
    - **Ambiguous**: "figure out", multiple approaches, vague criteria → ask user to refine
 4. If agent writes tests → include test reference file from plan (user-provided etalon)
-5. Assemble init prompt context — MUST include:
-   - "Receives" column artifacts (read files, paste content)
-   - Exact file paths from step's `files_read` + `files_write`
-   - Interface/contract the SUT implements
-   - Function signatures agent will call
+5. Assemble agent prompt — include:
+   - "Receives" artifacts (paste content)
+   - `files_read` + `files_write` paths
+   - SUT interface/contract + function signatures
    - Full step text from plan
 
 ### Per-Agent Pipeline
@@ -297,19 +299,14 @@ Agent fails repeatedly → STOP, report to user with diagnosis.
 
 <IMPORTANT>
 
-## Anchor
+## Anchor — Most Violated
 
-- Tests FIRST — TDD is non-negotiable
-- Test design is FULL AAA inline in plan — planning artifact, user reviews before execution
-- Execution = sonnet. Opus for execution = user-approved exception
-- Every execution step is sonnet-ready: exact files, actual code, verification command
-- Orchestrator reads agent table, never re-analyzes context_needs
-- STOP and report BLOCKED after 3 failed attempts
-- Agent proposes commit messages in plan, user reviews
-- Parallel agents do NOT commit — orchestrator makes compound commit after each parallel stage
+- Tests FIRST — TDD non-negotiable, test design inline in plan
+- Tests are the spec — sonnet fixes implementation, not assertions
+- Execution = sonnet. Opus = user-approved exception
+- Every step is sonnet-ready: exact files, actual code, verify command
+- Parallel agents don't commit — orchestrator compound commit after stage
 - make mock / make gen = sequential barrier, never inside parallel stage
-- Opus subagent validates plan executability before execution (step 3)
-- Opus branch review + autofix loop after all agents (step 5)
-- Orchestrator writes execution diagnostics to plans/diagnostics-{ticket}.md (step 6)
+- BLOCKED after 3 failed attempts — document and STOP
 
 </IMPORTANT>

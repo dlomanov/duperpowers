@@ -204,29 +204,7 @@ func makeMocks(t *testing.T) mockList {
 
 Single SUT in package → `func makeSUT(t *testing.T) (*Service, mockList)` at file end. Multiple SUTs → inline creation, reuse `makeMocks(t)`.
 
-**TM-3. No `t.Helper()` in `makeSUT`/`makeService`/`makeMocks`.** These functions create mocks and construct SUT — never add `t.Helper()`.
-
-```go
-// BAD — t.Helper() in makeSUT
-func makeSUT(t *testing.T) (*Service, mockList) {
-    t.Helper()
-
-    m := mockList{
-        repo: mocks.NewRepo(t),
-    }
-
-    return New(m.repo), m
-}
-
-// GOOD — no t.Helper()
-func makeSUT(t *testing.T) (*Service, mockList) {
-    m := mockList{
-        repo: mocks.NewRepo(t),
-    }
-
-    return New(m.repo), m
-}
-```
+**TM-3. No `t.Helper()` in `makeSUT`/`makeMocks`.** These create mocks and construct SUT — unconditional, never helpers.
 
 **TM-2. Mock chain: one method per line.** Break after `EXPECT().`:
 
@@ -266,14 +244,6 @@ m.locker.EXPECT().
     },
 },
 ```
-
-| Use | gofakeit | Hardcoded |
-|-----|----------|-----------|
-| IDs, keys, names | `gofakeit.UUID()`, `gofakeit.Word()` | — |
-| Enums, statuses | — | `Status_STATUS_CREATED` |
-| Durations, timeouts | — | `200 * time.Millisecond` |
-| Amounts | `testx.CreateMoney()` | — |
-| Counters, indices | — | `int64(1)`, `int64(2)` |
 
 **TF-2. Shared values.** Values shared across cases → `var(...)` block before table (see duperpowers-go:go-writer SN-3). Infrastructure constants (e.g., `bucket`) → package-level `const`. Each case shows only what VARIES.
 
@@ -323,83 +293,7 @@ synctest.Test(t, func(t *testing.T) {
 })
 ```
 
-**TA-2. Integration tests.** Look at reference integration test in the same repo layer for patterns. Structure:
-
-```go
-// package-level setup
-var testCluster *cluster.Cluster
-
-func TestMain(m *testing.M) {
-    secrets, configs := config.LoadTestEnv()
-
-    var err error
-    testCluster, err = cluster.New(context.Background(), secrets, configs)
-    if err != nil {
-        panic(err)
-    }
-    defer testCluster.Close()
-
-    m.Run()
-}
-```
-
-```go
-// makeSUT — real DB, mock only clock/external
-func makeSUT(t *testing.T) (*Repo, mockList) {
-    m := mockList{timer: mocks.NewTimer(t)}
-    m.timer.EXPECT().NowUTC().Return(testTime).Maybe()
-
-    return New(repo.NewBaseRepo(testCluster), m.timer), m
-}
-```
-
-```go
-// TestRepo — test group with shared setup
-func TestRepo(t *testing.T) {
-    t.Parallel()
-
-    sut, _ := makeSUT(t)
-    a := assert.New(t)
-    ctx := context.Background()
-
-    // Create
-    err := sut.Create(ctx, bucketNumber, entity)
-    a.NoError(err)
-
-    // Find
-    actual, err := sut.Find(ctx, bucketNumber, filter)
-    a.NoError(err)
-    a.Equal(entity.ID, actual.ID)
-}
-```
-
-```go
-// TestRepo_Method — table-driven with rollback isolation
-func TestRepo_Method(t *testing.T) {
-    t.Parallel()
-
-    sut, _ := makeSUT(t)
-
-    tests := []struct {
-        name   string
-        action func(ctx context.Context, a *assert.Assertions)
-    }{
-        // ...
-    }
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            t.Parallel()
-
-            a := assert.New(t)
-            err := sut.WithTx(t.Context(), bucketNumber, func(ctx context.Context) error {
-                tt.action(ctx, a)
-                return errRollback
-            })
-            a.ErrorIs(err, errRollback)
-        })
-    }
-}
-```
+**TA-2. Integration tests.** Read existing integration tests in the same repo layer for patterns (`TestMain`, `makeSUT` with real DB, rollback isolation). Ask user for reference file if none found.
 
 ## Template
 

@@ -5,8 +5,6 @@ description: "Go code review (*.go files). Two modes: spec, quality. Structured 
 
 # Go Reviewer
 
-Review Go code changes. Static analysis only — read code, never run it.
-
 <IMPORTANT>
 
 ## Reviewer Rules
@@ -36,20 +34,9 @@ ONE LEVEL DOWN — from change into callees, then across all methods/functions o
 
 SCOPE-DOWN MANDATORY CHECKS:
 
-CHECK A — Redundant guards: For EVERY `if <condition> { callee() }` pattern, READ the callee source. If callee has the same condition internally → flag as redundant.
-
-CHECK B — Redundant pre-validation: When code calls `validate(x)` before `parse(x)` and `parse` returns an error that IS checked — the pre-validation adds ZERO value. Remove it and behavior is identical.
-
-CHECK C — Wrong predicate: When code uses `type.PredicateA()`, ALWAYS read ALL predicate methods of that type. Compare their semantics. Verify the chosen predicate is correct for the intent.
-
-| Rationalization | Reality |
-|---------|---------|
-| "The diff is only a few lines, I'll just review those" | Lines live inside functions. ALWAYS read the full function. No UP = missed context. |
-| "I can tell what the callee does from its name" | Names lie. `IsUndefined` is actually `!IsValidValue`. ALWAYS inspect implementation. No DOWN = missed bugs. |
-| "Checking all sibling methods is overkill" | Sibling methods reveal the correct one. No ACROSS on DOWN = wrong predicate. |
-| "The guard is just defensive programming, it's fine" | If the callee already handles the empty/nil/zero case, the caller's guard is dead code. |
-| "Pre-validation before parsing is good practice" | If the parser returns an error AND you check it, the entire pre-validation function is redundant. |
-| "These two predicates are semantically equivalent so it's just style" | STOP. If they are equivalent, why do BOTH exist? Read the source of ALL predicates on the type. Usually one handles edge cases the other misses. |
+CHECK A — `if <condition> { callee() }` where callee has same condition internally → redundant guard
+CHECK B — `validate(x)` before `parse(x)` where parse returns checked error → redundant pre-validation
+CHECK C — `type.PredicateA()` used → read ALL predicate methods of that type, verify correct one chosen
 **RR-2.** No contradiction with duperpowers-go:go-writer / duperpowers-go:go-writer-test.
 **RR-3.** No "while you're at it" scope creep. Issues found within RR-1 scope (UP/DOWN/ACROSS) are in-scope; do not flag issues outside RR-1 boundaries.
 **RR-4.** Uncertain → 👀 WARN, not 💥 ERR.
@@ -66,8 +53,6 @@ One mode per invocation. Determined by dispatch:
 
 - **spec** — verify step is fully delivered: every deliverable present, criteria met, no scope leak. Input: plan step + `git diff`.
 - **quality** — verify code follows duperpowers-go:go-writer / duperpowers-go:go-writer-test conventions. Input: `git diff`.
-
-For spec and quality: review scope expands UP + DOWN + ACROSS from the diff per RR-1.
 
 ## Spec Mode
 
@@ -92,79 +77,76 @@ Review changed code. Skip generated and excluded files. Each check references du
 
 ### Errors
 
-- **GP-3** Inline `errors.New` → should be sentinel `var errX`
-- **GP-4** Unwrapped `return err` from function/method calls → `fmt.Errorf("callee: %w", err)`
-- **ERR-3** `errors.As(err, &T{})` → should be typed error check (check project's errorsx or similar package)
-- Swallowed errors: empty `if err != nil {}` or `_ = fn()` on fallible
-- Error messages: lowercase, no punctuation, no "failed to"
+- **GP-3** inline `errors.New` → sentinel `var errX`
+- **GP-4** unwrapped `return err` → `fmt.Errorf("callee: %w", err)`
+- **ERR-3** `errors.As(err, &T{})` → typed error check (errorsx package)
+- swallowed errors: empty `if err != nil {}` or `_ = fn()`
+- error messages: lowercase, no punctuation, no "failed to"
 
 ### Code Structure
 
-- **GP-1** Dead branches guarding impossible states (nil checks on DI deps)
-- **GP-2** Sequential ifs on same result → should be bare `switch {}`. Exception: side-effect annotation (log/metric without own `return`)
-- **GP-7** Every code change MUST have an obvious reason. When the reason is unclear — ALWAYS flag as 👀 WARN
-- **PS-2** Models/tasks built inside `txmanager.Do` → should be built before
+- **GP-1** dead branches on DI deps (nil checks on injected fields)
+- **GP-2** sequential ifs on same result → bare `switch {}`. Exception: side-effect annotation
+- **GP-7** change without obvious reason → 👀 WARN
+- **PS-2** models built inside `txmanager.Do` → build before
 
 ### Concurrency
 
-- Context propagated, never created mid-chain
-- Goroutines have lifetime (ctx, done, errgroup)
-- Shared state synchronized
-- No mutex held across I/O
+- context propagated, never created mid-chain
+- goroutines have lifetime (ctx, done, errgroup)
+- shared state synchronized, no mutex across I/O
 
 ### Layout
 
-- **LY-1** Wrong ordering: type + constructor → exported methods → unexported methods. Within group: callers before callees
-- **LY-2** Interfaces in implementation files → should be in root package file. Unsorted groups → primitives → infrastructure → business
-- **LY-3** Struct fields: generic/primitive first, specific/business last
-- **LY-4** Code MUST respect layer boundaries: domain/models packages NEVER contain infrastructure knowledge — raw SQL, column names, JSONB paths, type casts (`::INT`), table references. Infrastructure logic ALWAYS lives in adapters
+- **LY-1** wrong order: type+constructor → exported → unexported, callers before callees
+- **LY-2** interfaces in impl files → root package file, sorted: primitive → infra → business
+- **LY-3** struct fields: generic first, business last
+- **LY-4** domain packages with SQL/column names/JSONB → infra belongs in adapters
 
 ### Naming & Style
 
-- **SN-1** Non-standard receivers (not `x` for structs, not `r` for repo, not `v` for lambdas)
-- **SN-2** Name stutter with package (`order.OrderService`)
-- **SN-3** 3+ scattered `:=` → should be `var(...)` block
-- **STY-1** Line > 120 chars or > 3 args on one line
-- **STY-2** > 2 struct fields initialized on one line
-- **STY-3** WHAT comments (restating code) → only `// WHY:` allowed
-- **STY-4** `interface{}` instead of `any`. Invented abbreviations
+- **SN-1** non-standard receivers (`x` structs, `r` repo, `v` lambdas)
+- **SN-2** name stutter (`order.OrderService`)
+- **SN-3** 3+ scattered `:=` → `var(...)` block
+- **STY-1** line > 120 chars or > 3 args → split
+- **STY-2** > 2 struct fields on one line → split
+- **STY-3** WHAT comments → only `// WHY:` allowed
+- **STY-4** `interface{}` → `any`
 
 ### Modern Go
 
-- **MG-1** if/else chain for defaults → `cmp.Or()`
-- **MG-2** `omitempty` on `time.Time`, `time.Duration`, structs → `omitzero`
-- **MG-3** `wg.Add(1)` + `go func() { defer wg.Done()` → `wg.Go()`
+- **MG-1** if/else defaults → `cmp.Or()`
+- **MG-2** `omitempty` on time/structs → `omitzero`
+- **MG-3** `wg.Add(1)` + goroutine → `wg.Go()`
 
 ### Tests
 
-- **TG-3** if/else for error check → `assert.ErrorIs`. `var errTest` → `assert.AnError`
-- **TG-4** Success case not last
-- **TG-5** Concrete mock values in failure cases → should be `mock.Anything`
-- **TM-2** Inline mock chains → break after `EXPECT().`, one method per line
-- **TM-3** `t.Helper()` in `makeSUT`/`makeService`/`makeMocks` → never add, these are unconditional exceptions
-- **TT-5** Compact one-line struct literals → always multi-line
-- **TF-2** Repeated literals across cases → shared `var(...)` block
-- **TS-1** Missing `t.Parallel()`. `context.Background()` → `t.Context()`
-- **TS-2** Wrong naming: `happy_path` → `"success"`. Underscores in case names → spaces
-- **TT-4** Case comments restating name → should explain WHY (Russian). Do NOT flag missing comments
-- **TT-3** Business logic in `before` → should be mock setup only
-- New exported func/method without test → 💥 ERR
+- **TG-3** if/else error check → `assert.ErrorIs`. `var errTest` → `assert.AnError`
+- **TG-4** success case not last
+- **TG-5** concrete mock values in failure cases → `mock.Anything`
+- **TM-2** inline mock chains → break after `EXPECT().`
+- **TM-3** `t.Helper()` in makeSUT/makeMocks → never
+- **TT-5** compact struct literals → always multi-line
+- **TF-2** repeated literals → shared `var(...)` block
+- **TS-1** missing `t.Parallel()`, `context.Background()` → `t.Context()`
+- **TS-2** `happy_path` → `"success"`, underscores → spaces
+- **TT-4** case comments restating name → explain WHY (Russian). Don't flag missing
+- **TT-3** business logic in `before` → mock setup only
+- new exported func/method without test → 💥 ERR
 
 ### Red Flags
 
-- Unbounded alloc in hot path (no cap hint)
+- unbounded alloc in hot path (no cap hint)
 - N+1 queries (DB call in loop)
-- Unvalidated input at system boundary
-- Hardcoded secrets or credentials
+- unvalidated input at system boundary
+- hardcoded secrets
 
 ### Ignore
 
-- gofmt / goimports whitespace and import ordering
-- Code outside RR-1 scope (beyond UP + DOWN + ACROSS from diff)
-- Missing comments (duperpowers-go:go-writer STY-3: zero by default)
-- "Nice to have" improvements
-- Hypothetical future problems
-- Test coverage for unexported helpers (judgment call)
+- gofmt/goimports whitespace
+- code outside RR-1 scope
+- missing comments (STY-3: zero by default)
+- "nice to have", hypothetical future problems
 
 ## Output
 
