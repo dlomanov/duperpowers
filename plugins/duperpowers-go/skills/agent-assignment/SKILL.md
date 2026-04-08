@@ -1,6 +1,6 @@
 ---
 name: agent-assignment
-description: "MUST invoke after writing a plan (step 2 in workflow). Builds dependency graph, assigns agents, validates plan."
+description: "MUST invoke after writing a plan (step 4 in workflow). Builds dependency graph, assigns agents, validates plan."
 ---
 
 # Agent Assignment
@@ -178,13 +178,13 @@ For worked examples, read `agent-assignment-examples.md` in this skill directory
 
 ## Integration
 
-Runs as step 2 in plan-orchestrator workflow:
+Runs as step 4 in plan-orchestrator workflow:
 ```
-1. writing-plans => plan with steps + context fields
-2. agent-assignment => this skill (DG → CO → GR → MA → AI → VL)
+3. writing-plans => plan with steps + context fields
+4. agent-assignment => this skill (DG → CO → GR → MA → AI → VL)
 → user reviews
-3. plan-executability-review (opus subagent) => sonnet executability validation
-4. execute per agent table
+5. plan-executability-review (opus subagent) => sonnet executability validation
+6. execute per agent table
 ```
 
 <IMPORTANT>

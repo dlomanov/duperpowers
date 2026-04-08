@@ -56,7 +56,7 @@ duperpowers/
 │       ├── .cursor-plugin/plugin.json
 │       ├── hooks/                         # session-start + PreToolUse hooks
 │       ├── agents/gocheck.md              # Go verification agent
-│       └── skills/                        # 11 skills
+│       └── skills/                        # 12 skills
 ├── standalone/
 │   ├── project-commands/
 │   │   ├── SKILL.md
@@ -75,7 +75,8 @@ duperpowers/
 | Skill | Purpose |
 |-------|---------|
 | `using-duperpowers` | Session bootstrap — override triggers, skill index |
-| `plan-orchestrator` | Workflow: brainstorm → plan → assign → execute |
+| `plan-orchestrator` | Workflow: brainstorm → research → plan → assign → execute |
+| `research` | Explore codebase topics before planning (research files + INDEX) |
 | `agent-assignment` | Dependency graph, contract extraction, agent table, validation |
 | `tdd-design` | Test design during planning (case table with hints) |
 | `want-planning` | Transition to plan writing, re-reads context |

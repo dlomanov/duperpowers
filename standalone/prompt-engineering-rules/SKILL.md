@@ -22,6 +22,12 @@ Sorted by measured/observed impact. IDs are append-only.
 
 ## Tier 2 — Expert Consensus
 
+**PR-18. Shortest possible sentences.** Write rules in plain direct language. No subordinate clauses, no jargon, no hedge words. One idea per sentence.
+
+**PR-19. Representative examples, not edge cases.** Examples teach the model what "normal" looks like. 3 diverse common-case examples build the mental map. Edge cases without a baseline teach the exception, not the rule. Cover the territory, then add boundaries.
+
+BAD: only edge cases (empty input, nil, overflow). GOOD: 3 common cases first, then 1 edge case.
+
 **PR-6. 30-line core + rich examples.** Core rules fit in ~30 lines. GOOD/BAD examples add length but worth the tokens for sonnet comprehension. Core is tight, examples are rich.
 
 **PR-7. 3-5 examples per format.** Most reliable way to stabilize output format. Examples > descriptions.

@@ -93,7 +93,7 @@ Add after "repo error":
 
 ## Integration
 
-Invoked by plan-orchestrator during step 1 (writing-plans).
+Invoked by plan-orchestrator during step 3 (writing-plans).
 
 <IMPORTANT>
 
