@@ -17,9 +17,21 @@ else
   skill_name=$(echo "$input" | grep -o '"skill"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/' || true)
 fi
 
-# Only trigger for superpowers skills, skip our own
+# Trigger for superpowers skills (full prefix or short name), skip our own
 case "$skill_name" in
-  superpowers:*)
+  superpowers:*|\
+  brainstorming|\
+  writing-plans|\
+  executing-plans|\
+  subagent-driven-development|\
+  test-driven-development|\
+  dispatching-parallel-agents|\
+  using-git-worktrees|\
+  requesting-code-review|\
+  receiving-code-review|\
+  systematic-debugging|\
+  verification-before-completion|\
+  finishing-a-development-branch)
     context="OVERRIDE REMINDER: You are loading ${skill_name}. You MUST ALSO invoke duperpowers-go:superpowers-overrides."
 
     escape_for_json() {
