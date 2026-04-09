@@ -40,5 +40,7 @@ MUST invoke `duperpowers-go:superpowers-overrides` when any superpowers skill lo
 | Deep branch review | duperpowers-go:make-go-review |
 | Go verification | duperpowers-go:gocheck (agent) |
 | Notes in MIT outline format | duperpowers-go:mit-writer |
+| Focus recovery before planning | duperpowers-go:want-planning |
+| Focus recovery before execution | duperpowers-go:want-executing |
 
 </IMPORTANT>

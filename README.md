@@ -56,7 +56,7 @@ duperpowers/
 │       ├── .cursor-plugin/plugin.json
 │       ├── hooks/                         # session-start + PreToolUse hooks
 │       ├── agents/gocheck.md              # Go verification agent
-│       └── skills/                        # 11 skills
+│       └── skills/                        # 13 skills
 ├── standalone/
 │   ├── project-commands/
 │   │   ├── SKILL.md
@@ -85,6 +85,8 @@ duperpowers/
 | `go-reviewer` | Two modes: spec + quality, PASS/FAIL verdicts |
 | `make-go-review` | Deep review wrapper for branch diff |
 | `mit-writer` | Hierarchical outline notes |
+| `want-planning` | Focus recovery before planning (`/want-planning`) |
+| `want-executing` | Focus recovery before execution (`/want-executing`) |
 | `gocheck` (agent) | Go build/test/lint verification |
 
 ### Standalone

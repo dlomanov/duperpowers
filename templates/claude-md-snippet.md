@@ -12,6 +12,7 @@ Never use `/tmp`, `/private/tmp`, or any system temp directories. Use `~/src/san
 If `~/src/sand/docs/` does not exist, create it with `mkdir -p ~/src/sand/docs/`.
 Prefer pipelines over temp files.
 Always run `make *`, `go get *`, `go mod *` with unset proxy: `HTTP_PROXY= HTTPS_PROXY= http_proxy= https_proxy= no_proxy= NO_PROXY=`.
+After code review: fix all CRIT and ERR findings yourself, then re-run review. Only report WARN/INFO to user.
 </CRITICAL>
 
 ## Duperpowers — INVARIANTS
