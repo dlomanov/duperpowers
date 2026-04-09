@@ -49,6 +49,26 @@ ANY task that produces a plan or involves multi-step implementation. No size thr
 
 Go verification: delegate to duperpowers-go:gocheck agent.
 
+## Pipeline Phases
+
+FIRST action when plan-orchestrator is invoked: create tasks for pipeline phases (TaskCreate). Each phase = one task. Steps match Workflow numbering (0-7).
+
+| Step | Task | Skills / action |
+|------|------|-----------------|
+| 0 | Brainstorm → spec | superpowers:brainstorming |
+| 1 | Research → findings | duperpowers-go:research (skip if not needed) |
+| 2 | Write plan with test design | superpowers:writing-plans + tdd-design |
+| 3 | Agent assignment + validation | duperpowers-go:agent-assignment |
+| 4 | Plan executability review | opus subagent - sonnet-executability check |
+| 5 | Execute per agent table | superpowers:executing-plans / subagent-driven-development |
+| 6 | Branch review | opus subagent - go-reviewer spec+quality, full branch diff |
+| 7 | Execution diagnostics | orchestrator - plans/diagnostics-{ticket}.md |
+
+- Check existing tasks first. If pipeline tasks exist - resume, don't recreate.
+- Mark in_progress when starting, completed when done.
+- Skip phases that don't apply (research declined, light pipeline skips 6-7).
+- NEVER skip to step 5 without completing 3-4. NEVER report done without completing 6-7.
+
 </IMPORTANT>
 
 ## What & Why (required first section)
@@ -312,5 +332,6 @@ Agent fails repeatedly → STOP, report to user with diagnosis.
 - Parallel agents don't commit — orchestrator compound commit after stage
 - make mock / make gen = sequential barrier, never inside parallel stage
 - BLOCKED after 3 failed attempts — document and STOP
+- Pipeline phases — create tasks at start, review + diagnostics are tasks not afterthoughts
 
 </IMPORTANT>

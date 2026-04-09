@@ -65,10 +65,13 @@ Report to the user what version was installed.
 claude plugin uninstall duperpowers
 ```
 
-Also check if `gopls-lsp` is installed (Go language intelligence). If NOT in the list:
+**Optional:** Ask the user: **"Would you like to install gopls-lsp for Go language intelligence (navigation, diagnostics)? Requires `gopls` in PATH."**
+
+If yes, check `claude plugin list` — if not already installed:
 ```bash
 claude plugin install gopls-lsp@claude-plugins-official
 ```
+If `gopls` binary is not found in PATH, tell the user: **`go install golang.org/x/tools/gopls@latest`** and ensure `$GOPATH/bin` is in PATH.
 
 Now proceed to **Common Steps** below.
 
@@ -208,7 +211,6 @@ Run through each check and report results to the user:
 **Plugins:**
 - [ ] `superpowers` is installed
 - [ ] `duperpowers-go` is installed
-- [ ] `gopls-lsp` is installed (Claude Code only)
 - [ ] Old `duperpowers` (without -go) is NOT installed
 
 **CLAUDE.md** (if steps 3-4 were done):
