@@ -11,6 +11,7 @@ Never add `Co-Authored-By: Claude*` or any AI attribution to commit messages. Ne
 Never use `/tmp`, `/private/tmp`, or any system temp directories. Use `~/src/sand/docs/`.
 If `~/src/sand/docs/` does not exist, create it with `mkdir -p ~/src/sand/docs/`.
 Prefer pipelines over temp files.
+Always run `make *`, `go get *`, `go mod *` with unset proxy: `HTTP_PROXY= HTTPS_PROXY= http_proxy= https_proxy= no_proxy= NO_PROXY=`.
 </CRITICAL>
 
 ## Duperpowers — INVARIANTS
