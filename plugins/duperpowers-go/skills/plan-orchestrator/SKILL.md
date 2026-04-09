@@ -22,28 +22,27 @@ ANY task that produces a plan or involves multi-step implementation. No size thr
 0. superpowers:brainstorming → spec
 1. duperpowers-go:research (user confirms topic list before start)
    → research files + INDEX.md → suggest /compact
-2. want-planning → re-read CLAUDE.md, invoke skills, report readiness
-3. superpowers:writing-plans → plan with full test design inline + context fields
+2. superpowers:writing-plans → plan with full test design inline + context fields
    → if research exists: read INDEX.md FIRST, use findings as ground truth,
      reference research file paths in files_read, do NOT re-explore researched topics
-4. agent-assignment skill → DG → CO → agents → validation → PASS/FAIL
+3. agent-assignment skill → DG → CO → agents → validation → PASS/FAIL
    → user reviews: plan + test designs + agent assignments
    If validation FAILs → orchestrator presents each finding WITH own assessment. Only user can approve.
-5. plan-executability-review (opus subagent) → validate plan is solid for sonnet execution
+4. plan-executability-review (opus subagent) → validate plan is solid for sonnet execution
    - Input: plan + agent table
    - Checks: exported/unexported consistency, import completeness,
      insertion point precision, sonnet executability (no "figure out" / "decide")
    - Output: PASS / FAIL + issues list
-   - On FAIL: return to step 3 with issues, re-run steps 4-5
-6. superpowers:subagent-driven-development OR superpowers:executing-plans → execute per agent table
+   - On FAIL: return to step 2 with issues, re-run steps 3-4
+5. superpowers:subagent-driven-development OR superpowers:executing-plans → execute per agent table
    - Parallel agents: implement-only, do NOT commit (see Parallel Stage Commits)
    - Sequential barriers: make mock/gen between parallel stages only (see Sequential Barriers)
    - After each parallel stage: orchestrator makes compound commit
-7. opus branch review (subagent, duperpowers-go:go-reviewer spec+quality) on full branch diff
+6. opus branch review (subagent, duperpowers-go:go-reviewer spec+quality) on full branch diff
    - CRIT/ERR → dispatch sonnet fix agent (file:line + description) → gocheck → re-review
    - Max 2 autofix iterations, then escalate to user (T3)
    - WARN/INFO only → report to user, done
-8. execution diagnostics — orchestrator reviews full message history (planning + execution)
+7. execution diagnostics — orchestrator reviews full message history (planning + execution)
    - Output: plans/diagnostics-{ticket}.md
    - Content: what went wrong in pipeline, recommendations for workflow improvement
 ```

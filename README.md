@@ -56,7 +56,7 @@ duperpowers/
 │       ├── .cursor-plugin/plugin.json
 │       ├── hooks/                         # session-start + PreToolUse hooks
 │       ├── agents/gocheck.md              # Go verification agent
-│       └── skills/                        # 12 skills
+│       └── skills/                        # 11 skills
 ├── standalone/
 │   ├── project-commands/
 │   │   ├── SKILL.md
@@ -79,7 +79,6 @@ duperpowers/
 | `research` | Explore codebase topics before planning (research files + INDEX) |
 | `agent-assignment` | Dependency graph, contract extraction, agent table, validation |
 | `tdd-design` | Test design during planning (case table with hints) |
-| `want-planning` | Transition to plan writing, re-reads context |
 | `superpowers-overrides` | Overrides for superpowers defaults |
 | `go-writer` | Go conventions, golden rules, modern Go 1.22+ |
 | `go-writer-test` | Go test conventions, AAA, table-driven, mocks |

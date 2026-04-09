@@ -111,8 +111,7 @@ Research is phase 1 in plan-orchestrator workflow:
 ```
 0. superpowers:brainstorming → spec
 1. duperpowers-go:research (optional) → research files + INDEX.md → suggest /compact
-2. want-planning → re-read CLAUDE.md, invoke skills
-3. superpowers:writing-plans → plan (reads INDEX.md first)
+2. superpowers:writing-plans → plan (reads INDEX.md first)
 ```
 
 After `/compact`, opus writing the plan starts with clean context. Research survives in files.
