@@ -216,7 +216,7 @@ For every agent before dispatching:
 3. Assess task clarity:
    - **Clear** (sonnet-safe): exact scope, one deliverable, concrete criteria
    - **Ambiguous**: "figure out", multiple approaches, vague criteria → ask user to refine
-4. If agent writes tests → include test reference file from plan (user-provided etalon)
+4. If agent writes tests → include test reference file from plan (user-confirmed etalon)
 5. Assemble agent prompt — include:
    - "Receives" artifacts (paste content)
    - `files_read` + `files_write` paths

@@ -12,7 +12,7 @@ description: "Use when writing test design during planning phase — before any 
 **TD-1.** Test design is a planning artifact. Opus writes it, user reviews it, sonnet implements it.
 **TD-2.** Minimal intervention. Prefer adding cases to existing tests over creating new files. Prefer modifying existing cases over adding new ones. New test file only when no suitable test exists.
 **TD-3.** Invoke go-writer-test AND go-writer before writing hints. Go code in hints follows go-writer conventions. Test patterns follow go-writer-test conventions. Sonnet copies patterns from your examples.
-**TD-4.** Ask user before writing: reference test file (best test in the project to use as pattern — MUST ask, never auto-pick), code reference file (SUT interface), comments on cases.
+**TD-4.** Ask user before writing: reference test file (best test in the project to use as pattern — MUST ask, proactively suggest best candidate with reasoning), code reference file (SUT interface), comments on cases.
 
 </IMPORTANT>
 
@@ -99,6 +99,6 @@ Invoked by plan-orchestrator during step 3 (writing-plans).
 
 ## Anchor
 
-Most violated: TD-1 (planning artifact, not execution step), TD-3 (invoke go-writer-test before writing hints), TD-4 (ask user for reference test file).
+Most violated: TD-1 (planning artifact, not execution step), TD-3 (invoke go-writer-test before writing hints), TD-4 (ask user for reference test file, suggest best candidate).
 
 </IMPORTANT>
