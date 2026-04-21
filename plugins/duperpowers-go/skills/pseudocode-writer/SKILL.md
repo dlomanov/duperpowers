@@ -10,18 +10,18 @@ description: "Use when writing production pseudocode (L0 → L1 transition of ps
 ## Golden Rules
 
 - **PW-1.** MUST invoke `duperpowers-go:go-writer` before editing any `.go` file. Go conventions apply to all real-Go parts.
-- **PW-2.** Pseudocode lives at the exact code location. Use `/* TODO[group]: ... */` for multi-line blocks inside new function bodies; use `// TODO[group]: ...` for inline single-line directives (especially when modifying existing code).
+- **PW-2.** `TODO:` at the exact code location, two forms:
+  - Block `/* TODO[group]: ... */` inside new function bodies — exactly one per body, alongside zero-value return. No real implementation mixed in.
+  - Inline `// TODO[group]: ...` at each change site in existing code — multiple per body OK.
 - **PW-3.** Real Go (compile-checked) for: signatures, types, fields, models, interfaces, enums, constants. These must not be stubs.
-- **PW-4.** New function bodies return zero-value only, with exactly one block `TODO:` describing intended behavior. No partial implementation mixed in.
-- **PW-5.** Modifications to existing code: inline `// TODO:` at each change site. Multiple TODOs per body are OK in this case.
-- **PW-6.** Audience = user. No agent-specific sections, no USER/AGENT labels. If the user understands, sonnet understands.
-- **PW-7.** Group tag `[group-tag]` is optional. Use when a change spans multiple files/funcs and grep-coherence matters. Single-file single-func changes may omit it.
-- **PW-8.** Symbol set: `→ = ≠ & | !`. Use natural words where a symbol would obscure meaning. Do NOT use `∧ ∨ ¬` or invented notation.
-- **PW-9.** On completion MUST invoke `duperpowers-go:verify` with target=L1. On FAIL, fix missing guarantees before declaring completion. Do NOT declare L1 without PASS.
+- **PW-4.** Audience = user. No agent-specific sections, no USER/AGENT labels. If the user understands, sonnet understands.
+- **PW-5.** Group tag `[group-tag]` is optional. Use when a change spans multiple files/funcs and grep-coherence matters. Single-file single-func changes may omit it.
+- **PW-6.** Symbol set: see §Symbol Reference. Do NOT use `∧ ∨ ¬` or invented notation.
+- **PW-7.** On completion MUST invoke `duperpowers-go:verify` with target=L1. On FAIL, fix missing guarantees before declaring completion. Do NOT declare L1 without PASS.
 
 ## North Star
 
-Pseudocode must be so readable that the user fights the urge to implement it themselves. That tension is the signal. If the reader isn't pulled toward hand-writing, pseudocode is too abstract.
+Pseudocode should read so clear the user would rather hand-write the implementation than review the plan text.
 
 - Use real identifiers (`repo.Get`, `mapper.ToUserDTO`), not placeholders ("the repo", "the mapper")
 - One logical step per line
@@ -36,7 +36,7 @@ Pseudocode must be so readable that the user fights the urge to implement it the
 | "Let me add an 'agent:' section for extra details" | No — single audience. If the detail matters to the user, write it inline. If not, drop it. |
 | "Multiple TODO blocks in one new body looks cleaner" | New bodies: one block. Multiple is for existing-code modifications only. |
 | "I can skip the `go-writer` invocation, I know Go" | PW-1 is mandatory. Conventions drift; loading is cheap. |
-| "Verify can wait until later" | PW-9 is mandatory. A transition is not complete without its safety gate. |
+| "Verify can wait until later" | PW-7 is mandatory. A transition is not complete without its safety gate. |
 
 </IMPORTANT>
 
@@ -52,7 +52,7 @@ L0 → L1 transition for the pseudocode-pipeline. Produces Go files where:
 ### Block TODO — new function body (one block per body)
 
 ```go
-func (s *UserService) GetUser(ctx context.Context, id string) (*UserDTO, error) {
+func (x *UserService) GetUser(ctx context.Context, id string) (*UserDTO, error) {
     /* TODO[get-user]:
        validate id
          empty     → ErrInvalidID
@@ -73,17 +73,17 @@ func (s *UserService) GetUser(ctx context.Context, id string) (*UserDTO, error) 
 ### Inline TODO — modifying existing code (one per change site, multiple OK)
 
 ```go
-func (s *UserService) UpdateUser(ctx context.Context, u *User) error {
+func (x *UserService) UpdateUser(ctx context.Context, u *User) error {
     if err := u.Validate(); err != nil {
         return err
     }
     // TODO[user-audit]: capture old user state before save (for audit log)
-    oldState, err := s.repo.Get(ctx, u.ID)
+    oldState, err := x.repo.Get(ctx, u.ID)
     if err != nil {
         // TODO[user-audit]: wrap with ErrInternal — audit fetch failure is non-retryable
         return err
     }
-    if err := s.repo.Save(ctx, u); err != nil {
+    if err := x.repo.Save(ctx, u); err != nil {
         return err
     }
     // TODO[user-audit]: emit AuditEvent{op=update, before=oldState, after=u}
@@ -94,7 +94,7 @@ func (s *UserService) UpdateUser(ctx context.Context, u *User) error {
 ### Block TODO — nested decision tree
 
 ```go
-func (s *UserService) DeleteUser(ctx context.Context, id string, hard bool) error {
+func (x *UserService) DeleteUser(ctx context.Context, id string, hard bool) error {
     /* TODO[user-delete]:
        check permissions
          !admin & hard          → ErrForbidden
@@ -140,30 +140,23 @@ Blank lines separate major phases. Indentation shows branch / dependency hierarc
 
 ## L1 Guarantees Produced
 
-Tracked by `verify` skill. All of:
-
-- **G1.1** Public signatures of new/changed methods compile
-- **G1.2** Types, fields, models, interfaces compile
-- **G1.3** At least one `TODO:` marker present
-- **G1.4** `gocheck` passes
-- **G1.5** `dpcheck` passes (if available; warning if missing)
+The branch reaches L1 when `duperpowers-go:verify L1` returns PASS. That skill is the authoritative guarantee list. Summary: real-Go contracts + `TODO:` markers + `gocheck` clean + `dpcheck` clean (when available).
 
 ## Relationship to Other Skills
 
-- `go-writer` — mandatory pre-load (PW-1). Provides Go conventions.
-- `verify` — mandatory post-invoke (PW-9). Confirms L1 reached.
-- `pseudocode-writer-test` — next skill (L1 → L1.5). Introduced in M2 milestone.
-- `go-writer-test` — not used in this skill (production code only).
+- `duperpowers-go:go-writer` — mandatory pre-load (PW-1). Provides Go conventions.
+- `duperpowers-go:verify` — mandatory post-invoke (PW-7). Confirms L1 reached.
+- `duperpowers-go:pseudocode-writer-test` — next skill (L1 → L1.5). Introduced in M2 milestone (roadmap).
+- `duperpowers-go:go-writer-test` — not used in this skill (production code only).
 
 <IMPORTANT>
 
 ## Anchor
 
 - **PW-1.** Load `go-writer` before editing `.go`
-- **PW-2.** TODO at exact code location, block for new bodies, inline for existing-code edits
+- **PW-2.** `TODO:` at exact code location — block for new bodies (one per body + zero-value return), inline for existing-code mods
 - **PW-3.** Real Go for contracts
-- **PW-4.** New bodies: one block TODO + zero-value return, no mixed impl
-- **PW-6.** Single audience = user
-- **PW-9.** Invoke `verify L1` on completion. FAIL → fix, not declare.
+- **PW-4.** Single audience = user
+- **PW-7.** Invoke `verify L1` on completion. FAIL → fix, not declare.
 
 </IMPORTANT>

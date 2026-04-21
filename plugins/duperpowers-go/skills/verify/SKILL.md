@@ -1,6 +1,6 @@
 ---
 name: verify
-description: "Use to check branch state against pseudocode-pipeline level guarantees (L0/L1/L1.5/L2). Runs gocheck + dpcheck (if available) + level-specific invariants. Returns PASS/FAIL with missing-guarantees list. Idempotent, invokable at any level. Transition skills (pseudocode-writer, pseudocode-writer-test, dispatch) invoke this at completion as built-in safety gate."
+description: "Use when checking branch state against pseudocode-pipeline level guarantees (L0/L1/L1.5/L2). Runs gocheck + dpcheck (if available) + level-specific invariants. Returns PASS/FAIL with missing-guarantees list. Idempotent, invokable at any level. Transition skills invoke this at completion as built-in safety gate: `pseudocode-writer` (M1); `pseudocode-writer-test` (M2 roadmap); `dispatch` (M3 roadmap)."
 ---
 
 # Verify
@@ -57,13 +57,11 @@ Run checks in order; the first level whose ALL guarantees pass is the current le
 
 ### L1 guarantees
 
-- **G1.1** Public signatures of new/changed methods compile
-- **G1.2** Types, fields, models, interfaces compile
+- **G1.1** Public signatures of new/changed methods compile — enforced transitively by G1.4
+- **G1.2** Types, fields, models, interfaces compile — enforced transitively by G1.4
 - **G1.3** At least one `TODO:` marker present in branch diff (block `/* TODO: */` or inline `// TODO:`)
 - **G1.4** `gocheck` passes (build + vet + test compile)
 - **G1.5** `dpcheck` passes (if available; warn if missing)
-
-G1.1 and G1.2 are covered by G1.4 transitively (code that doesn't compile fails `gocheck`), so they are not separately checked.
 
 ### L1.5 guarantees
 
@@ -79,8 +77,8 @@ G1.1 and G1.2 are covered by G1.4 transitively (code that doesn't compile fails 
 - All L1.5 guarantees
 - **G2.1** `grep 'TODO:' --include='*.go'` in changed scope = 0 matches
 - **G2.2** `go test ./...` passes (no failures)
-- **G2.3** `plan.md` exists and is non-empty (dispatch artifact)
-- **G2.4** Latest `review` verdict = PASS (when invoked as part of dispatch)
+- **G2.3** Latest `review` verdict = PASS (when invoked as part of dispatch)
+- **G2.4** `plan.md` exists and is non-empty (dispatch artifact)
 
 ## Check Implementation
 
