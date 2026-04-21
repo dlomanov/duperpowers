@@ -5,6 +5,8 @@ description: "Project Go test conventions for *_test.go files. MUST invoke for a
 
 # Go Unit Tests
 
+Unit tests here are **white-box**: lock coverage, fix degrees of freedom, verify field propagation. They do NOT prove behavior — that is the job of integration / acceptance tests. Cases map to **behaviors** (branches, validations, error paths), NEVER to fields. Adding a propagated field ≠ adding a case.
+
 <IMPORTANT>
 
 ## Golden Rules
@@ -100,6 +102,64 @@ m.repo.EXPECT().
     Return(nil, assert.AnError).
     Once()
 ```
+
+**TG-6. One case per behavior, not per field.** A test case encodes a behavior: a branch, a validation, an error path. A newly propagated field **extends the existing `success` case** — update the shared `expected` and the mock `Return`, done. Add a new case ONLY when the field introduces new behavior: a new branch, own validation, or a new error sentinel.
+
+```go
+// BAD — добавили Tags, создали новый кейс, продублировали все зависимости
+{
+    name: "success",
+    args: id,
+    before: func(a args, m mockList) {
+        m.repo.EXPECT().
+            Get(a).
+            Return(User{ID: id}, nil).
+            Once()
+    },
+    want: User{ID: id},
+},
+{
+    name: "success with tags",
+    args: id,
+    before: func(a args, m mockList) {
+        m.repo.EXPECT().
+            Get(a).
+            Return(User{ID: id, Tags: []string{"go"}}, nil).
+            Once()
+    },
+    want: User{ID: id, Tags: []string{"go"}},
+},
+
+// GOOD — расширили expected у существующего success
+var (
+    id       = gofakeit.UUID()
+    expected = User{ID: id, Tags: []string{"go"}} // ← новое поле прилетает сюда
+)
+// ...
+{
+    name: "success",
+    args: id,
+    before: func(a args, m mockList) {
+        m.repo.EXPECT().
+            Get(a).
+            Return(expected, nil).
+            Once()
+    },
+    want: expected,
+},
+```
+
+| Rationalization | Reality |
+|---|---|
+| "Новое поле — нагляднее отдельным кейсом" | Кейс = поведение, а не поле. Propagation идёт в `expected`. |
+| "Добавлю кейс, чтобы явно показать поле" | Поле уже видно в `expected`. Новый кейс = дубль моков + шум. |
+| "Это тоже success, просто с полем" | Success один. Расширь его. |
+| "Вдруг кто-то захочет смотреть только это поле" | Для этого есть `assert.Equal` по структуре — composite assertion. |
+
+Triggers that DO justify a new case (a new *behavior* appears with the field):
+- field switches a branch: `if u.Deleted { ... }` → нужны кейсы `deleted` и `active`
+- field has its own validation: `if u.Email == "" { return ErrNoEmail }` → нужен кейс `empty email`
+- field unlocks a new error path from a dep: новая ветка `repo.Get` возвращает `ErrExpired`
 
 </IMPORTANT>
 
@@ -375,6 +435,7 @@ func TestService_Method(t *testing.T) {
 - **TG-3** `assert.ErrorIs` + `assert.AnError` — never if/else, never `var errTest`
 - **TG-4** Case order: simple → complex → success LAST
 - **TG-5** Mock specificity: success = concrete, failures = `mock.Anything`
+- **TG-6** One case per behavior, not per field — new propagated field extends `success`, never creates a case
 - **TM-2** Mock chain: break after `EXPECT().`, one method per line
 - **TT-5** Always multi-line struct literals — never compact one-liners
 
