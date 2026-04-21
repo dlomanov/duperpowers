@@ -159,6 +159,7 @@ Present the list:
 | `project-commands` | Make targets, test commands, go doc protocol — template to adapt per project | project or user |
 | `prompt-engineering-rules` | Reference for writing CLAUDE.md, SKILL.md, AI instruction files | project or user |
 | `english-practice` | Passive English practice — responds in English, corrects up to 2 grammar mistakes per response | user (recommended) or project |
+| `spawn-worker` | Spawn parallel Claude Code worker sessions in new Ghostty tabs with pre-filled prompts (macOS + Ghostty only) | user only |
 
 For each skill the user wants, ask: **"Install as project-level (current repo only) or user-level (all repos)?"**
 
@@ -202,6 +203,16 @@ mkdir -p .claude/skills/english-practice
 ```
 Fetch same URL, write to `.claude/skills/english-practice/SKILL.md`.
 
+- **spawn-worker** (user-level only, requires macOS + Ghostty.app + Claude Code):
+
+  This skill ships with bash helper scripts (`~/bin/cc-run-worker`, `~/bin/spawn-cc-worker`) in addition to `SKILL.md`. Do NOT use the single-file curl pattern above. Instead, delegate to the dedicated install flow:
+
+  1. Fetch `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/spawn-worker/INSTALL.md`
+  2. Follow every step in that file exactly — it handles platform checks (macOS, Ghostty, claude CLI, zsh), network probes (corporate proxy, MDM writability), macOS Automation permission pre-warming, file install with checksum sidecars, and an automated sentinel-file smoke test.
+  3. Report back here with the dedicated flow's outcome (passed / failed, plus any STOP reasons).
+
+  If the user is not on macOS or does not have Ghostty installed, skip this skill and tell the user: **"spawn-worker requires macOS + Ghostty. Skipping."**
+
 Tell the user: **"project-commands is a template — edit it to match your project's actual Makefile targets."**
 
 ## Step 6: Verify
@@ -220,6 +231,7 @@ Run through each check and report results to the user:
 
 **Standalone skills** (if step 5 was done):
 - [ ] SKILL.md exists at each chosen path
+- [ ] If `spawn-worker` was chosen: `~/bin/cc-run-worker` and `~/bin/spawn-cc-worker` are executable, and the dedicated INSTALL flow's smoke test passed
 
 Report the checklist with pass/fail for each item. If anything failed, offer to fix it.
 
