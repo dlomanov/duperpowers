@@ -71,12 +71,12 @@ func TestUserService_GetUser(t *testing.T) {
         want    *UserDTO
         wantErr error
     }{
-        // пустой id — валидация отсекает на входе, репо не дергается
+        // empty id - validation rejects at entry, repo is not called
         {
             name:    "empty id",
             wantErr: ErrInvalidID,
         },
-        // репо вернул NotFound — доменная ошибка, не internal
+        // repo returned NotFound - domain error, not internal
         {
             name: "not found",
             args: id,
@@ -89,7 +89,7 @@ func TestUserService_GetUser(t *testing.T) {
             },
             wantErr: domain.ErrUserNotFound,
         },
-        // любая другая ошибка репо → оборачиваем в ErrInternal
+        // any other repo error - wrap in ErrInternal
         {
             name: "repo error",
             args: id,
@@ -102,7 +102,7 @@ func TestUserService_GetUser(t *testing.T) {
             },
             wantErr: assert.AnError,
         },
-        // все зависимости отработали — собран DTO через mapper
+        // all dependencies succeeded - DTO built via mapper
         {
             name: "success",
             args: id,
@@ -154,7 +154,7 @@ func TestUserService_Create(t *testing.T) {
 
     var (
         id       = gofakeit.UUID()
-        // TODO[user-tags]: добавить Tags в expected - поле прилетает из DTO
+        // TODO[user-tags]: add Tags to expected - field comes from DTO
         expected = User{ID: id}
     )
 
@@ -175,7 +175,7 @@ func TestUserService_Create(t *testing.T) {
             args: args{ID: id},
             before: func(a args, m mockList) {
                 m.repo.EXPECT().
-                    // TODO[user-tags]: matcher - Save получает u с правильными Tags
+                    // TODO[user-tags]: matcher - Save gets u with correct Tags
                     Save(mock.Anything, mock.Anything).
                     Return(expected, nil).
                     Once()
@@ -221,16 +221,7 @@ Blank lines separate major phases inside a `TODO:` block. Indentation shows bran
 
 ## L1.5 Guarantees Produced
 
-Tracked by `duperpowers-go:verify`. All of (from spec §4 + `verify` SKILL.md):
-
-- **G1.1-G1.5** (all L1 guarantees, re-checked)
-- **G1.5.1** Each new exported function/method in the diff has a corresponding `*_test.go` file
-- **G1.5.2** Test functions contain a populated `cases` slice (non-empty rows with name, input, expected)
-- **G1.5.3** `t.Run` and setup closures contain `TODO:` markers or real-Go scaffolding
-- **G1.5.4** Existing tests modified in the diff carry `TODO:` markers at modification sites
-- **G1.5.5** `go test -count=0 ./...` compiles (failures allowed; bodies unimplemented)
-
-`verify` is authoritative — this list is a reader-convenience summary only.
+The branch reaches L1.5 when `duperpowers-go:verify L1.5` returns PASS. That skill is the authoritative guarantee list. Summary: all L1 guarantees hold + `*_test.go` per new exported func + populated cases tables + `TODO:` markers or real-Go scaffolding in `t.Run` / setup closures + `go test -count=0 ./...` compiles.
 
 ## Relationship to Other Skills
 
@@ -238,7 +229,7 @@ Tracked by `duperpowers-go:verify`. All of (from spec §4 + `verify` SKILL.md):
 - `duperpowers-go:verify` — invoked twice: at start with target L1 (PWT-2 precondition), at completion with target L1.5 (PWT-7).
 - `duperpowers-go:pseudocode-writer` — prior skill (L0 → L1). Shares format conventions (TODO: block/inline, symbol set, single-audience rule).
 - `duperpowers-go:go-writer` — not used here (tests only).
-- `duperpowers-go:go-reviewer` — not invoked; review is optional at L1/L1.5 per spec §9.
+- `duperpowers-go:go-reviewer` — not auto-invoked by this skill; review is optional at L1/L1.5 per spec §9. User may invoke `duperpowers-go:review` ad-hoc.
 
 <IMPORTANT>
 
