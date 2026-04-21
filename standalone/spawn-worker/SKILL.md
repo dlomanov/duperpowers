@@ -39,6 +39,10 @@ Prompt is pre-filled and auto-submitted on launch.
 4. Tell the user: "Worker `<id>` spawned in a new Ghostty tab. Let me know when
    it finishes and I'll read the result."
 
+   If the worker has been silent for unusually long (say >15 minutes for a task
+   that should take 2): the tab may have crashed silently. Ask the user to glance
+   at the Ghostty tab — an empty or errored tab means respawn is needed.
+
 5. When user signals completion: read the worker's transcript from
    `~/.claude/projects/<project-slug>/<session-id>.jsonl`. Find it with
    `ls -t ~/.claude/projects/ | head` to get the right project dir, then

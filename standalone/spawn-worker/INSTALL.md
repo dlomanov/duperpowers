@@ -17,11 +17,37 @@ You are an AI assistant helping a user install `spawn-worker` on their machine. 
 | "The user probably already has it, skip" | Check each file; overwrite only what's stale |
 | "Ghostty works on Linux too, no platform check needed" | The install uses macOS AppleScript. Non-macOS MUST stop |
 | "Curl failed but I'll try again with a different URL" | STOP. Report the error. Do not guess alternative URLs |
-| "Smoke test is optional, skip it" | Run it unless user declines — verifies the whole chain |
+| "Smoke test is optional, skip it" | Run it unconditionally — verifies the whole chain |
 
 ## Step 0: Platform and prerequisites
 
-Run all checks in parallel, report all failures before stopping:
+### Step 0.1: Network reachability to GitHub raw
+
+```bash
+curl -fsI --max-time 10 https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/spawn-worker/INSTALL.md >/dev/null 2>&1 && echo "github-raw-ok" || echo "github-raw-unreachable"
+```
+
+If `github-raw-unreachable` → STOP. Tell the user: "Cannot reach raw.githubusercontent.com. If on a corporate network, set HTTPS_PROXY and/or NODE_EXTRA_CA_CERTS, then re-run. If at home, check your connection."
+
+### Step 0.2: ~/bin writability
+
+```bash
+mkdir -p ~/bin && touch ~/bin/.spawn-worker-writable-test && rm ~/bin/.spawn-worker-writable-test && echo "bin-writable-ok" || echo "bin-not-writable"
+```
+
+If `bin-not-writable` → STOP. Tell the user: "~/bin is not writable. If this is an MDM-managed work mac, ask IT to allow user-scope writes to ~/bin, or choose an alternative BIN_DIR and re-run (edit INSTALL.md locally)."
+
+### Step 0.3: macOS Automation permissions for Ghostty
+
+The first time osascript sends commands to Ghostty, macOS shows a privacy dialog. Trigger it now so the user can approve before the smoke test silently fails.
+
+```bash
+osascript -e 'tell application "Ghostty" to activate' 2>&1
+```
+
+If the agent running this is itself automated (no human to click), flag: "macOS may show an Automation permissions dialog. User must approve it for the smoke test to work. Re-run INSTALL once approved."
+
+Run all remaining checks in parallel, report all failures before stopping:
 
 ```bash
 uname -s                                 # must be "Darwin" (macOS)
@@ -48,13 +74,39 @@ mkdir -p ~/bin ~/.claude/skills/spawn-worker ~/src/sand/docs/prompts
 
 Use `curl` or the WebFetch tool to fetch each file from the repo, write to disk. All three files are at `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/spawn-worker/`.
 
-**Before overwriting any file that already exists**, diff the existing version against the upstream. If they match exactly, skip (print "already up to date"). If they differ, show the diff and ask: **"File exists and differs from upstream. Overwrite? (your local changes will be lost)"** Only overwrite if the user confirms.
+**Before overwriting any file that already exists**, compare against upstream with an explicit diff. If unchanged, skip silently. If different AND a local-edit marker exists (see checksum sidecar below), ask the user. If different AND no local-edit marker, overwrite silently (it's an upstream update).
+
+For each file, run:
+
+```bash
+curl -fsSL <url> -o ~/src/sand/docs/.spawn-worker-upstream
+if cmp -s ~/src/sand/docs/.spawn-worker-upstream <local-path>; then
+  echo "already up to date: <local-path>"
+elif [ -f <local-path>.installed-sha ] && [ "$(shasum -a 256 <local-path> | cut -d' ' -f1)" != "$(cat <local-path>.installed-sha)" ]; then
+  # Local modifications detected — ask user
+  diff <local-path> ~/src/sand/docs/.spawn-worker-upstream | head -50
+  # Ask: "Local modifications to <local-path>. Overwrite with upstream version?"
+else
+  cp ~/src/sand/docs/.spawn-worker-upstream <local-path>
+  shasum -a 256 <local-path> | cut -d' ' -f1 > <local-path>.installed-sha
+fi
+rm -f ~/src/sand/docs/.spawn-worker-upstream
+```
+
+Replace `<url>` and `<local-path>` per file as listed in the numbered list below.
 
 Files to install:
 
 1. `~/bin/cc-run-worker` ← `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/spawn-worker/cc-run-worker`
 2. `~/bin/spawn-cc-worker` ← `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/spawn-worker/spawn-cc-worker`
 3. `~/.claude/skills/spawn-worker/SKILL.md` ← `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/spawn-worker/SKILL.md`
+
+After copying, the `.installed-sha` sidecars will be at:
+- `~/bin/cc-run-worker.installed-sha`
+- `~/bin/spawn-cc-worker.installed-sha`
+- `~/.claude/skills/spawn-worker/SKILL.md.installed-sha`
+
+These let re-runs tell apart upstream updates from local edits.
 
 Then make the scripts executable:
 
@@ -76,20 +128,43 @@ head -1 ~/bin/cc-run-worker | grep -q bash && echo "shebang ok"
 
 If any check fails, STOP and show the user what's wrong.
 
-## Step 4: Smoke test (optional)
+## Step 4: Smoke test
 
-Ask the user: **"Run a smoke test? It opens a new Ghostty tab and spawns a tiny worker that replies with 'banana'. Takes ~5 seconds."**
+Run an automated smoke test that verifies the full chain end-to-end without user inspection.
 
-If yes:
+Prepare the prompt and clear any prior sentinel:
 
 ```bash
-echo 'Reply with exactly one word: banana. Then stop and wait for /exit.' > /tmp/spawn-worker-smoke.md
-~/bin/spawn-cc-worker smoke /tmp/spawn-worker-smoke.md "$PWD" smoke-test
+mkdir -p ~/src/sand/docs/prompts
+rm -f ~/src/sand/docs/spawn-worker-smoke.ok
+cat > ~/src/sand/docs/prompts/smoke-test.md <<'SMOKE'
+You are the spawn-worker smoke test. Execute these steps exactly:
+1. Use Bash to run: touch ~/src/sand/docs/spawn-worker-smoke.ok
+2. Reply with one line: "smoke test ok"
+3. Stop. Wait for /exit.
+SMOKE
+~/bin/spawn-cc-worker smoke ~/src/sand/docs/prompts/smoke-test.md "$HOME" smoke-test
 ```
 
-Tell the user: **"Check the new Ghostty tab titled 'smoke-test'. The worker should reply 'banana'. Close the tab when done."**
+Then wait up to 30 seconds for the sentinel file:
 
-Do NOT auto-verify the tab content — there's no programmatic way to read the worker's reply without reading its transcript file. The user visually confirms.
+```bash
+for i in $(seq 1 30); do
+  if [ -f ~/src/sand/docs/spawn-worker-smoke.ok ]; then
+    echo "smoke test PASSED"
+    rm ~/src/sand/docs/spawn-worker-smoke.ok
+    break
+  fi
+  sleep 1
+done
+if [ ! -f ~/src/sand/docs/spawn-worker-smoke.ok ] && [ "$i" = "30" ]; then
+  echo "smoke test FAILED: sentinel file did not appear within 30s"
+fi
+```
+
+Interpret results:
+- **PASSED** → the full chain works. Tell the user: "Smoke test passed. Close the 'smoke-test' Ghostty tab at your convenience."
+- **FAILED** → STOP. Tell the user: "Smoke test failed — sentinel file did not appear. Check the Ghostty tab for error output. See Troubleshooting below."
 
 ## Step 5: Report done
 

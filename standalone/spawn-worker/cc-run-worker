@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
+# Wrapper that execs claude via an interactive zsh so user's zshrc aliases load.
+# Usage: cc-run-worker <prompt-file> [name]
+set -euo pipefail
+: "${1:?usage: cc-run-worker <prompt-file> [name]}"
 NAME="${2:-worker}"
 exec /bin/zsh -ic 'claude --name "$1" "$(cat "$2")"' zsh "$NAME" "$1"

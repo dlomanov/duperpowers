@@ -6,11 +6,17 @@ PROMPT_FILE="${2:?prompt-file required}"
 CWD="${3:-$PWD}"
 NAME="${4:-$WORKER_ID}"
 
+WORKER_ID_RE='^[A-Za-z0-9._-]+$'
+NAME_RE='^[A-Za-z0-9._ -]+$'
+[[ "$WORKER_ID" =~ $WORKER_ID_RE ]] || { echo "invalid worker-id: must match $WORKER_ID_RE" >&2; exit 1; }
+[[ "$NAME" =~ $NAME_RE ]] || { echo "invalid name: must match $NAME_RE" >&2; exit 1; }
+
 [ -f "$PROMPT_FILE" ] || { echo "prompt file not found: $PROMPT_FILE" >&2; exit 1; }
 
 PROMPT_ABS=$(cd "$(dirname "$PROMPT_FILE")" && printf '%s/%s' "$PWD" "$(basename "$PROMPT_FILE")")
 CWD_ABS=$(cd "$CWD" && pwd)
 
+# MY_ORC_WORKER_ID is exported into the worker's shell so its prompt can reference $MY_ORC_WORKER_ID.
 osascript <<OSA
 tell application "Ghostty"
   activate
