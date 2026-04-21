@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+NAME="${2:-worker}"
+exec /bin/zsh -ic 'claude --name "$1" "$(cat "$2")"' zsh "$NAME" "$1"
