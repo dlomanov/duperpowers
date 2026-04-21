@@ -40,6 +40,7 @@ MUST invoke `duperpowers-go:superpowers-overrides` when any superpowers skill lo
 | Deep branch review | duperpowers-go:make-go-review |
 | Go verification (low-level) | duperpowers-go:gocheck (agent) |
 | Writing production pseudocode (L0 → L1) | duperpowers-go:pseudocode-writer |
+| Writing test pseudocode (L1 → L1.5) | duperpowers-go:pseudocode-writer-test |
 | Verify pseudocode-pipeline level guarantees | duperpowers-go:verify |
 | Notes in MIT outline format | duperpowers-go:mit-writer |
 | Focus recovery before planning | duperpowers-go:want-planning |
