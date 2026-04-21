@@ -1,6 +1,6 @@
 ---
 name: verify
-description: "Use when checking branch state against pseudocode-pipeline level guarantees (L0/L1/L1.5/L2). Runs gocheck + dpcheck (if available) + level-specific invariants. Returns PASS/FAIL with missing-guarantees list. Idempotent, invokable at any level. Transition skills invoke this at completion as built-in safety gate: `pseudocode-writer`, `pseudocode-writer-test`, `dispatch` (M3 roadmap)."
+description: "Use when checking branch state against pseudocode-pipeline level guarantees (L0/L1/L1.5/L2). Runs gocheck + dpcheck (if available) + level-specific invariants. Returns PASS/FAIL with missing-guarantees list. Idempotent, invokable at any level. Transition skills invoke this at completion as built-in safety gate: `pseudocode-writer`, `pseudocode-writer-test`, `dispatch`."
 ---
 
 # Verify

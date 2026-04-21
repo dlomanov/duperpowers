@@ -2,7 +2,7 @@
   "name": "duperpowers-go",
   "displayName": "Duperpowers Go",
   "description": "Go development pipeline: planning, orchestration, TDD, conventions, testing, code review",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "author": {
     "name": "Denis Lomanov"
   },

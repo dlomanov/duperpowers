@@ -41,7 +41,9 @@ MUST invoke `duperpowers-go:superpowers-overrides` when any superpowers skill lo
 | Go verification (low-level) | duperpowers-go:gocheck (agent) |
 | Writing production pseudocode (L0 → L1) | duperpowers-go:pseudocode-writer |
 | Writing test pseudocode (L1 → L1.5) | duperpowers-go:pseudocode-writer-test |
+| Dispatch L1.5 → L2 (composite transition) | duperpowers-go:dispatch |
 | Verify pseudocode-pipeline level guarantees | duperpowers-go:verify |
+| Level-aware review (L0/L1/L1.5/L2) | duperpowers-go:review |
 | Notes in MIT outline format | duperpowers-go:mit-writer |
 | Focus recovery before planning | duperpowers-go:want-planning |
 | Focus recovery before execution | duperpowers-go:want-executing |
