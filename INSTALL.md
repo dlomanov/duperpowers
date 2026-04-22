@@ -129,7 +129,7 @@ If yes:
 - Go implementation → MUST invoke `duperpowers-go:go-writer` + `duperpowers-go:go-writer-test`
 - Go code review → MUST invoke `duperpowers-go:go-reviewer`
 - Any superpowers skill loads → MUST invoke `duperpowers-go:superpowers-overrides`
-- Multi-step implementation → MUST invoke `duperpowers-go:plan-orchestrator`
+- Multi-step Go implementation → use pseudocode pipeline: `duperpowers-go:pseudocode-writer` → `pseudocode-writer-test` → `dispatch`
 - Execution = sonnet. Opus for execution = user-approved exception
 - STOP and report BLOCKED after 3 failed attempts
 ```
