@@ -35,9 +35,9 @@ grep -q '^format:' Makefile && echo "format" || echo "NO"
 ```
 Both `NO` → report ⊘ SKIPPED, go to Step 4.
 
-If target found, run in sequence:
+If target found, capture pre-state inline, run the formatter, diff against post-state — no temp files:
 ```bash
-git diff --stat > /tmp/gocheck-pre.md
+PRE=$(git diff --stat)
 ```
 Run ONE of these (matching detected target):
 ```bash
@@ -46,19 +46,11 @@ HTTP_PROXY= HTTPS_PROXY= http_proxy= https_proxy= make fast-format
 ```bash
 HTTP_PROXY= HTTPS_PROXY= http_proxy= https_proxy= make format
 ```
-Then:
+Then compare:
 ```bash
-git diff --stat > /tmp/gocheck-post.md
+diff <(printf '%s' "$PRE") <(git diff --stat)
 ```
-```bash
-diff /tmp/gocheck-pre.md /tmp/gocheck-post.md
-```
-No output from diff = clean. Output = files changed by formatter.
-
-Cleanup:
-```bash
-rm -f /tmp/gocheck-pre.md /tmp/gocheck-post.md
-```
+No output = clean. Output = files changed by formatter.
 
 ## STEP 4 — Tests
 

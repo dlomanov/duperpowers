@@ -22,17 +22,6 @@ escape_for_json() {
 escaped=$(escape_for_json "$using_skill")
 session_context="<IMPORTANT>\nYou have duperpowers-go.\n\n**Below is the full content of your 'duperpowers-go:using-duperpowers' skill — your guide to all duperpowers-go skills. For all other skills, use the Skill tool:**\n\n${escaped}\n\n### Go Skill Pairings with Superpowers\nWhen using superpowers:test-driven-development with Go code (*.go) → also invoke duperpowers-go:go-writer-test\nWhen using superpowers:requesting-code-review on Go code → also invoke duperpowers-go:go-reviewer (spec or quality)\n</IMPORTANT>"
 
-has_todo=false
-if command -v rg >/dev/null 2>&1; then
-  rg -l --type=go -q 'TODO:' 2>/dev/null && has_todo=true
-elif grep -rq --include='*.go' 'TODO:' . 2>/dev/null; then
-  has_todo=true
-fi
-
-if [ "$has_todo" = true ]; then
-  session_context="${session_context}\n\nBRANCH STATE: pseudocode-pipeline active (TODO: markers present). Invoke \`duperpowers-go:verify\` to determine current level (L0/L1/L1.5/L2)."
-fi
-
 if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
   printf '{\n  "additional_context": "%s"\n}\n' "$session_context"
 elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then

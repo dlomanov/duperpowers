@@ -53,5 +53,3 @@ mkdir -p ~/.claude/skills/prompt-engineering-rules
 Fetch SKILL.md and write it to `~/.claude/skills/prompt-engineering-rules/SKILL.md`.
 
 5. Tell the user: **"Reference installed. It will be available as a skill in your next session."**
-
-4. Tell the user: **"Reference installed. It will be available as a skill in your next session."**

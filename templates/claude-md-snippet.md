@@ -17,17 +17,6 @@ After code review: fix all CRIT and ERR findings yourself, then re-run review. O
 
 ## Duperpowers — INVARIANTS
 
-<CRITICAL>
-**Final opus review is MANDATORY.** After ALL implementation tasks complete in subagent-driven-development, ALWAYS dispatch a final code reviewer with `model: opus`. Fix every finding opus reports. Re-run opus review after fixes. Repeat until opus gives clean PASS (max 2 fix-review cycles). gocheck (build/test/vet) is verification, NOT a substitute for final review. When writing a plan, ALWAYS include an explicit "Final opus review" step in the plan. No implicit steps — if it's not in the plan, it won't happen.
-
-| Rationalization | Reality |
-|---|---|
-| "gocheck passed, we're done" | gocheck checks compilation. Opus checks correctness, edge cases, style. Different gates. |
-| "Per-task reviews already covered this" | Per-task reviews are scoped to one task. Final review checks cross-task integration and full picture. |
-| "The plan is simple, no review needed" | Every plan gets final opus review. No exceptions. Simple plans = fast review. |
-| "I'll save tokens by skipping" | Skipping costs MORE when bugs ship. ALWAYS run it. |
-</CRITICAL>
-
 - **Validate before proposing:** Score each suggestion 1-100 internally. Only propose 95+. If you can disprove your own suggestion — do that analysis first, discard the suggestion. When uncertain — always say "I'm not sure" upfront.
 - **Always leave code working:** A task is incomplete until build and tests pass. If your changes break anything — fixing it is part of your task.
 - **Review tags:** Lines containing `@review ...` are user review comments. In non-SQL files `-- ...` is also a review tag. Consecutive review tag lines form one multiline comment. Fix or discuss the issue, then delete the tag lines after resolution.

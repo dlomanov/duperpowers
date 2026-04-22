@@ -57,7 +57,7 @@ Modifiers (pure, no mutation):
 | `duperpowers-go:verify` | gocheck + dpcheck + level-specific guarantee checks | sonnet |
 | `duperpowers-go:review` | level-aware semantic review; L2 = 2 reviewer opuses + 1 consolidator | opus |
 
-Enforcement runs in 4 layers: mechanical (verify + gocheck + dpcheck) → procedural (writer skills) → semantic (review) → user. Fix-loop budget ≤ 2 iter, then T3-escalate.
+Enforcement runs in 4 layers: mechanical (verify + gocheck + dpcheck) → procedural (writer skills) → semantic (review) → user. Fix-loop budget ≤ 2 iter, then escalate to user (BLOCKED).
 
 `plan.md` is a **dispatch artifact** (summary + pointer map + DAG + agent table + DoD checklist) — logic is not duplicated there; logic lives in code.
 
@@ -97,7 +97,7 @@ Plus `gocheck` sonnet subagent — Go build/test/lint verification invoked by `v
 
 ### Skill Files
 
-- Frontmatter: `name` (hyphens only) + `description` (start with "Use when...")
+- Frontmatter: `name` (hyphens only) + `description` starting with a trigger phrase ("Use when...", "Use at...", "MUST invoke when...", or a terse project-noun phrase for reference skills such as `go-writer`)
 - Rule IDs are append-only (PW-*, PWT-*, VF-*, REV-*, DSP-*, GP-*, TG-*, RR-*, etc.)
 - `<IMPORTANT>` top + anchor bottom for golden rules
 - Cross-skill references by `duperpowers-go:skill-name`, never file paths

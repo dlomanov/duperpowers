@@ -57,12 +57,12 @@ wantErr: domain.ErrNotFound,     // specific production sentinel
 **TG-4. Case order: simple → complex → success LAST.** Reader sees "what can go wrong" before "what goes right". Compose `success` first (with concrete mock values), then derive failure cases from it.
 
 ```go
-// пустая строка не должна дойти до репозитория
+// empty string must not reach the repo - we reject at entry
 {
     name:    "empty input",
     wantErr: ErrEmpty,
 },
-// ошибка репозитория прокидывается наверх
+// repo error is propagated up without wrapping
 {
     name: "repo error",
     before: func(m mockList) {
@@ -73,7 +73,7 @@ wantErr: domain.ErrNotFound,     // specific production sentinel
     },
     wantErr: assert.AnError,
 },
-// все зависимости отработали – результат собран
+// all deps returned - result assembled
 {
     name: "success",
     args: id,
@@ -106,7 +106,7 @@ m.repo.EXPECT().
 **TG-6. One case per behavior, not per field.** A test case encodes a behavior: a branch, a validation, an error path. A newly propagated field **extends the existing `success` case** — update the shared `expected` and the mock `Return`, done. Add a new case ONLY when the field introduces new behavior: a new branch, own validation, or a new error sentinel.
 
 ```go
-// BAD — добавили Tags, создали новый кейс, продублировали все зависимости
+// BAD - added Tags, spawned a new case, duplicated all mocks
 {
     name: "success",
     args: id,
@@ -130,10 +130,10 @@ m.repo.EXPECT().
     want: User{ID: id, Tags: []string{"go"}},
 },
 
-// GOOD — расширили expected у существующего success
+// GOOD - extended expected on the existing success case
 var (
     id       = gofakeit.UUID()
-    expected = User{ID: id, Tags: []string{"go"}} // ← новое поле прилетает сюда
+    expected = User{ID: id, Tags: []string{"go"}} // new field lands here
 )
 // ...
 {
@@ -151,15 +151,13 @@ var (
 
 | Rationalization | Reality |
 |---|---|
-| "Новое поле — нагляднее отдельным кейсом" | Кейс = поведение, а не поле. Propagation идёт в `expected`. |
-| "Добавлю кейс, чтобы явно показать поле" | Поле уже видно в `expected`. Новый кейс = дубль моков + шум. |
-| "Это тоже success, просто с полем" | Success один. Расширь его. |
-| "Вдруг кто-то захочет смотреть только это поле" | Для этого есть `assert.Equal` по структуре — composite assertion. |
+| "A new field is clearer as a separate case" | A case encodes behavior, not a field. Propagation lives in `expected`; duplicate mocks add noise only. |
+| "This is also success, just with the field" | There is one `success`. Extend it - the field is already visible in `expected`. |
 
 Triggers that DO justify a new case (a new *behavior* appears with the field):
-- field switches a branch: `if u.Deleted { ... }` → нужны кейсы `deleted` и `active`
-- field has its own validation: `if u.Email == "" { return ErrNoEmail }` → нужен кейс `empty email`
-- field unlocks a new error path from a dep: новая ветка `repo.Get` возвращает `ErrExpired`
+- field switches a branch: `if u.Deleted { ... }` → need `deleted` and `active` cases
+- field has its own validation: `if u.Email == "" { return ErrNoEmail }` → need an `empty email` case
+- field unlocks a new error path from a dep: `repo.Get` gains a branch returning `ErrExpired`
 
 </IMPORTANT>
 
@@ -194,18 +192,18 @@ func TestService_Create(t *testing.T) {
 
 **TT-3. `before` = mock setup ONLY.** Signature: `func(args args, m mockList)`. Without args: `func(m mockList)`. Omit field when no setup needed — `if tt.before != nil` guard handles nil.
 
-**TT-4. Case comments.** Russian comment above each case on WHY it matters — what behavior or invariant it guards. Add value beyond case name.
+**TT-4. Case comments.** Short comment above each case on WHY it matters - the behavior or invariant it guards. Add value beyond the case name.
 
 ```go
-// BAD — restates name
-// пустой ввод
+// BAD - restates name
+// empty input
 {
     name:    "empty input",
     wantErr: ErrEmpty,
 },
 
-// GOOD — explains WHY
-// пустая строка не должна дойти до репозитория, отсекаем на входе
+// GOOD - explains WHY
+// empty string must not reach the repo - reject at entry
 {
     name:    "empty input",
     wantErr: ErrEmpty,
@@ -376,12 +374,12 @@ func TestService_Method(t *testing.T) {
 		want    ResultType
 		wantErr error
 	}{
-		// пустая строка не должна дойти до репозитория, отсекаем на входе
+		// empty string must not reach the repo - reject at entry
 		{
 			name:    "empty input",
 			wantErr: ErrEmpty,
 		},
-		// ошибка репозитория прокидывается наверх без оборачивания
+		// repo error propagates up without wrapping
 		{
 			name: "dependency fails",
 			before: func(_ args, m mockList) {
@@ -392,7 +390,7 @@ func TestService_Method(t *testing.T) {
 			},
 			wantErr: assert.AnError,
 		},
-		// все зависимости отработали – возвращаем собранный результат
+		// all deps returned - we assemble the result
 		{
 			name: "success",
 			args: id,

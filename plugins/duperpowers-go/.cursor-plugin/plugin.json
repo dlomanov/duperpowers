@@ -1,14 +1,14 @@
 {
   "name": "duperpowers-go",
   "displayName": "Duperpowers Go",
-  "description": "Go development pipeline: planning, orchestration, TDD, conventions, testing, code review",
-  "version": "0.0.21",
+  "description": "Go development pipeline: pseudocode-driven (L0/L1/L1.5/L2), TDD, conventions, code review, sonnet fan-out",
+  "version": "0.0.22",
   "author": {
     "name": "Denis Lomanov"
   },
   "homepage": "https://github.com/dlomanov/duperpowers",
   "repository": "https://github.com/dlomanov/duperpowers",
   "license": "MIT",
-  "keywords": ["go", "golang", "planning", "orchestration", "tdd", "testing", "code-review", "superpowers-companion"],
+  "keywords": ["go", "golang", "pseudocode", "tdd", "code-review", "orchestration", "superpowers-companion"],
   "hooks": "./hooks/hooks-cursor.json"
 }

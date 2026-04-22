@@ -1,6 +1,6 @@
 ---
 name: pseudocode-writer-test
-description: "Use when writing test pseudocode (L1 → L1.5 transition of pseudocode-pipeline). Produces *_test.go files with populated cases tables (real Go) and TODO: markers inside t.Run / setup closures. MUST invoke duperpowers-go:go-writer-test before editing any _test.go file. Precondition: branch at L1 — skill invokes duperpowers-go:verify L1 first. On completion MUST invoke duperpowers-go:verify with L1.5 target."
+description: "Use when writing test pseudocode (L1 → L1.5 transition of pseudocode-pipeline). Produces *_test.go files with populated cases tables and TODO: markers inside t.Run / setup closures."
 ---
 
 # Pseudocode Writer Test
@@ -19,12 +19,7 @@ description: "Use when writing test pseudocode (L1 → L1.5 transition of pseudo
 
 ## North Star
 
-Populated cases tables close the "what are we testing" question on paper, before implementation. By the time the user reads the test, the space of behaviors (branches, validations, error paths) is already enumerated — the only remaining work is filling `t.Run` bodies with assertions. If a table is dense and the bodies are thin `TODO:` stubs, the skill hit its mark.
-
-- One case per behavior, not per field (per TG-6 in `go-writer-test`)
-- Case order: simple → complex → success LAST (per TG-4)
-- Concrete mock args only in `success`; `mock.Anything` in failure cases (per TG-5)
-- Shared values in `var(...)` above the table (per TF-2)
+Populated cases tables close "what are we testing" on paper before implementation. Case order simple → complex → success LAST (TG-4); concrete mock args only in `success` (TG-5); one case per behavior (TG-6); shared values in `var(...)` above the table (TF-2).
 
 ## Anti-patterns
 
@@ -32,21 +27,10 @@ Populated cases tables close the "what are we testing" question on paper, before
 |-----------------|---------|
 | "I'll just leave cases table with TODO rows" | No — rows ARE the design (PWT-3). Table shape decides what behaviors exist; fill rows now. |
 | "`t.Run` body should call `sut.Method` already for realism" | Not required. A `TODO:` block that describes the call + assertions is enough — bodies get filled at L2. |
-| "I'll skip `verify L1` — user said they finished L1" | PWT-2 is mandatory. L1 claim without PASS is not a PASS. |
 | "I can use `t.Skip` / `t.Fatal` as a placeholder" | No — those run. Leave body empty except for `TODO:`; compiles without failing. |
 | "One case per propagated field — clearer" | TG-6 forbids this. A new field extends the existing `success` case; a new *behavior* justifies a new case. |
-| "`go-writer-test` is for full tests, pseudocode is different" | No. The conventions apply to real-Go parts of the test (table shape, mock chain, naming). Loading is cheap. |
-| "Verify can wait — I'll finish all tests first" | PWT-7 is mandatory. A transition is incomplete without its safety gate. |
 
 </IMPORTANT>
-
-## Purpose
-
-L1 → L1.5 transition for the pseudocode-pipeline. Produces `*_test.go` files where:
-- Test function signatures, `cases` tables, mock chains, and SUT construction are real Go and compile-checked.
-- `t.Run` bodies and setup closures carry `TODO:` markers (or partial real-Go) describing intended assertions.
-- Modifications to existing tests are annotated with inline `// TODO[group]:` at each change site.
-- The branch reaches L1.5 guarantees (see spec §4): G1.5.1 test file per new exported func; G1.5.2 populated cases; G1.5.3 scaffolding or TODO in closures; G1.5.4 TODO at modification sites; G1.5.5 `go test -count=0 ./...` compiles.
 
 ## Format
 
@@ -189,47 +173,12 @@ func TestUserService_Create(t *testing.T) {
 
 Inline markers at each change point; the test compiles untouched; user fills the marked spots on the way to L2.
 
-## Symbol Reference
-
-Inherited from `duperpowers-go:pseudocode-writer` — do NOT invent notation.
-
-| Symbol | Meaning |
-|--------|---------|
-| `→` | transition / result / outcome |
-| `=` | equals |
-| `≠` | not equal |
-| `&` | and |
-| `\|` | or |
-| `!` | not |
-
-Blank lines separate major phases inside a `TODO:` block. Indentation shows branch / dependency hierarchy.
-
-## Process
-
-1. Read the prod pseudocode from the L1 branch state — identify new exported functions/methods requiring tests.
-2. Invoke `duperpowers-go:verify L1` — must be PASS before editing tests (PWT-2). On FAIL: STOP, report missing L1 guarantees, hand back to user.
-3. Invoke `duperpowers-go:go-writer-test` before any `_test.go` edit (PWT-1).
-4. For each new exported function:
-   - Create `*_test.go` alongside prod file (same package, whitebox per TS-2).
-   - Write test function signature: `func TestType_Method(t *testing.T) { t.Parallel(); ... }` (real Go).
-   - Write populated `cases` table per TG-4 order (simple → complex → success last), per TG-5 mock specificity, per TG-6 one case per behavior.
-   - In each `before` closure and in `t.Run` body: either real-Go setup OR a `TODO:` block describing mock chain / assertions.
-5. For each modified existing test in the diff: insert inline `// TODO[group]:` at change sites (PWT-5).
-6. Once all planned test sites have tables + markers: invoke `duperpowers-go:verify L1.5` (PWT-7).
-7. On `verify` FAIL: fix missing guarantees (usually: missing `*_test.go` file, empty rows, or closures without TODO). Re-verify.
-8. On `verify` PASS: declare L1.5 reached; hand control back to user.
-
-## L1.5 Guarantees Produced
-
-The branch reaches L1.5 when `duperpowers-go:verify L1.5` returns PASS. That skill is the authoritative guarantee list. Summary: all L1 guarantees hold + `*_test.go` per new exported func + populated cases tables + `TODO:` markers or real-Go scaffolding in `t.Run` / setup closures + `go test -count=0 ./...` compiles.
+Symbol set inherited from `duperpowers-go:pseudocode-writer` §Symbol Reference. Do NOT invent notation.
 
 ## Relationship to Other Skills
 
-- `duperpowers-go:go-writer-test` — mandatory pre-load (PWT-1). Provides test conventions (TG-*, TS-*, TT-*, TM-*, TF-*).
-- `duperpowers-go:verify` — invoked twice: at start with target L1 (PWT-2 precondition), at completion with target L1.5 (PWT-7).
-- `duperpowers-go:pseudocode-writer` — prior skill (L0 → L1). Shares format conventions (TODO: block/inline, symbol set, single-audience rule).
-- `duperpowers-go:go-writer` — not used here (tests only).
-- `duperpowers-go:go-reviewer` — not auto-invoked by this skill; review is optional at L1/L1.5 per spec §9. User may invoke `duperpowers-go:review` ad-hoc.
+- `duperpowers-go:pseudocode-writer` — prior skill (L0 → L1). Shares format conventions (TODO: block/inline, symbol set).
+- `duperpowers-go:review` — optional at L1.5 per spec §9; user may invoke ad-hoc.
 
 <IMPORTANT>
 

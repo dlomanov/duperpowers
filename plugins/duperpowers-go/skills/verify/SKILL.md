@@ -1,6 +1,6 @@
 ---
 name: verify
-description: "Use when checking branch state against pseudocode-pipeline level guarantees (L0/L1/L1.5/L2). Runs gocheck + dpcheck (if available) + level-specific invariants. Returns PASS/FAIL with missing-guarantees list. Idempotent, invokable at any level. Transition skills invoke this at completion as built-in safety gate: `pseudocode-writer`, `pseudocode-writer-test`, `dispatch`."
+description: "Use when checking branch state against pseudocode-pipeline level guarantees (L0/L1/L1.5/L2). Runs gocheck + dpcheck + level-specific invariants. Returns PASS/FAIL with missing-guarantees list."
 ---
 
 # Verify
@@ -22,17 +22,10 @@ description: "Use when checking branch state against pseudocode-pipeline level g
 |-----------------|---------|
 | "I'll fix the issue while checking, it's faster" | No — verify is pure. Report only. Caller decides what to do. |
 | "Skip gocheck, user just ran build 2 min ago" | Always run. Last-known-good state is not trustworthy after edits. |
-| "Auto-promote to higher level if more guarantees hold than target" | No — caller passes target explicitly or via transition contract. |
+| "Auto-promote verdict to higher level if more guarantees hold than target" | No — the target level is a request, not a floor. Return PASS at the requested level only. Auto-detect only applies when NO target was specified (VF-1). |
 | "Treat missing dpcheck as PASS on L2 since rare tools can go missing" | No — L2 requires dpcheck. FAIL is correct. |
 
 </IMPORTANT>
-
-## Purpose
-
-Verify the branch state satisfies the guarantees of a given pseudocode-pipeline level. Two entry points:
-
-1. **Transition safety gate** — called by `pseudocode-writer`, `pseudocode-writer-test`, `dispatch` at completion of each transition. Target level = the transition's target.
-2. **Ad-hoc user check** — user asks "verify L1" or "what level am I at?". Target = user-specified or auto-detected.
 
 ## Usage
 
@@ -102,7 +95,7 @@ Availability check: consult Claude's tool catalog for `dpcheck`.
 - Missing on L0/L1/L1.5: emit warning line in output, treat DPCHECK slot as `missing`, continue.
 - Missing on L2: emit FAIL with message "dpcheck required on L2, not available".
 
-Exact `dpcheck` flags are pinned by the work-machine install — match what is available.
+Invocation: `dpcheck --level=<L0|L1|L1.5|L2> --base=main ./...`. If a different flag shape is detected on the work machine, match what is available.
 
 ### `TODO:` marker detection
 
@@ -116,13 +109,7 @@ Matches both plain `TODO:` and group-tagged `TODO[group]:`. Report per-file coun
 
 ### Diff-based exported-function detection (L1.5 G1.5.1)
 
-```
-git diff --name-only $BASE_REF...HEAD -- '*.go' | grep -v '_test.go$'
-```
-
-For each modified non-test file, use `go doc -all <pkg>` or AST parsing (prefer `gopls`) to enumerate newly exported symbols. For each new exported symbol, verify a matching `*_test.go` exists in the same package.
-
-(AST parsing exactness is tightened during M2 when `pseudocode-writer-test` is introduced; M1 may use a simpler heuristic — check file existence.)
+Enumerate newly-exported symbols in changed non-test `*.go` files (via `go doc -all` or AST). For each, verify a matching `*_test.go` exists in the same package.
 
 ## Output Format
 
@@ -144,17 +131,6 @@ GOCHECK:
 
 Duration: <wall-clock>s
 ```
-
-## Process
-
-1. Determine target level (caller-provided OR auto-detect)
-2. Run `gocheck` (bash sequence above); capture exit codes and stderr
-3. Check `dpcheck` availability; invoke if available with level hint
-4. Run level-specific invariant checks (§ Guarantees)
-5. Aggregate PASS/FAIL per guarantee
-6. Emit structured output
-
-On FAIL, do NOT propose fixes. The caller (transition skill or user) decides next steps. Writer-skills fix discipline issues; user fixes design issues.
 
 <IMPORTANT>
 

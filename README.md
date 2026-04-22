@@ -58,12 +58,10 @@ duperpowers/
 │       ├── agents/gocheck.md              # Go verification agent
 │       └── skills/                        # 12 skills
 ├── standalone/
-│   ├── project-commands/
-│   │   ├── SKILL.md
-│   │   └── INSTALL.md
-│   └── prompt-engineering-rules/
-│       ├── SKILL.md
-│       └── INSTALL.md
+│   ├── project-commands/            # SKILL.md + INSTALL.md
+│   ├── prompt-engineering-rules/    # SKILL.md + INSTALL.md
+│   ├── english-practice/            # SKILL.md + INSTALL.md
+│   └── spawn-worker/                # SKILL.md + INSTALL.md + bash helpers
 ├── templates/
 │   └── claude-md-snippet.md
 ├── INSTALL.md
@@ -95,6 +93,7 @@ duperpowers/
 | `project-commands` | Make targets, test commands, go doc protocol | [INSTALL.md](standalone/project-commands/INSTALL.md) |
 | `prompt-engineering-rules` | Reference for writing CLAUDE.md, SKILL.md, AI instruction files | [INSTALL.md](standalone/prompt-engineering-rules/INSTALL.md) |
 | `english-practice` | Passive English practice — responds in English, corrects grammar | [INSTALL.md](standalone/english-practice/INSTALL.md) |
+| `spawn-worker` | Spawn parallel Claude Code worker sessions in new Ghostty tabs (macOS + Ghostty) | [INSTALL.md](standalone/spawn-worker/INSTALL.md) |
 
 Not part of the plugin — install manually per project or globally.
 
@@ -102,6 +101,7 @@ Not part of the plugin — install manually per project or globally.
 Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/project-commands/INSTALL.md
 Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/prompt-engineering-rules/INSTALL.md
 Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/english-practice/INSTALL.md
+Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/spawn-worker/INSTALL.md
 ```
 
 ## How Overrides Work

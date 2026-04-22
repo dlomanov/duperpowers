@@ -11,7 +11,7 @@ description: "Use when performing level-aware semantic review of a pseudocode-pi
 
 - **REV-1.** Accept explicit target level (L0, L1, L1.5, L2) from the caller. If not provided, invoke `duperpowers-go:verify` (no arg) to auto-detect current level and use that.
 - **REV-2.** Compose `duperpowers-go:go-reviewer` as the atomic review unit — single-aspect reviewers invoke it (spec mode for aspect A, quality mode for aspect B). Do NOT reimplement the rubric.
-- **REV-3.** L0 = 1 opus, user-scoped — the user defines aspects at invocation time. L1 = L1.5 = 1 opus, correctness + architecture fused (same rubric — see §"L1 / L1.5 Rubric"). Review is optional at L0 / L1 / L1.5.
+- **REV-3.** L0: 1 opus, user-scoped (user picks aspects). L1 and L1.5: 1 opus each, same correctness+architecture rubric (§"L1 / L1.5 Rubric"). All three optional.
 - **REV-4.** L2 is mandatory and uses fixed composition: 2 reviewer opuses dispatched in parallel (aspect A = correctness + architecture; aspect B = implementation fused = go-quality + tests + security) + 1 consolidator opus invoked after both reviewers return. 3 opus invocations per L2 run.
 - **REV-5.** L2 PASS gate — ALL must hold: reviewer A verdict = PASS; reviewer B verdict = PASS; 0 CRIT total; 0 ERR in aspect A; ≤ 3 consolidated ERRs in aspect B. Any other state → FAIL.
 - **REV-6.** Consolidator resolves contradictions by fixed rules (see §"Consolidator") — architecture outranks style; max-severity wins on severity disagreement; A-scope outranks B-content. Deduplicates by (file, line-range proximity ≤ 3, semantic overlap). Annotates cross-references rather than dropping duplicates silently.
@@ -30,16 +30,6 @@ description: "Use when performing level-aware semantic review of a pseudocode-pi
 | "Consolidator may drop duplicates silently — noise reduction" | No (REV-6). Annotate `[also flagged by: ...]` — multi-reviewer agreement is signal, not noise. |
 
 </IMPORTANT>
-
-## Purpose
-
-Level-aware semantic review for the pseudocode-pipeline. Replaces any single-blanket-rubric review. Single skill with a level parameter drives different reviewer compositions:
-
-- **L0** — user defines the review scope. 1 opus reviewer, free-form.
-- **L1 / L1.5** — 1 opus reviewer focused on correctness + architecture (pseudocode coherence, contract fit, error paths, layer smells). Style / quality deferred — code not written yet.
-- **L2** — 2 reviewer opuses in parallel + 1 consolidator opus. Aspect A tightens the L1 rubric against now-real code. Aspect B reviews implementation (Go-quality + tests + security fused). Consolidator reconciles their findings and emits the PASS/FAIL gate verdict.
-
-Idempotent: safe to re-invoke at any level any number of times. Mutating action (fix-loop) is driven by the caller, not by this skill.
 
 ## Usage
 
@@ -91,13 +81,7 @@ Same rubric as L1 / L1.5, applied to fully-implemented code. Reviewer has more t
 
 ### Aspect B — implementation fused (opus)
 
-Go-quality rules (GP-*, SN-*, STY-*, LY-*, MG-*) + test correctness (TG-*, TS-*, TT-*, TM-*, TF-*) + security / invariants (concurrency: context propagation, goroutine lifetime, mutex-across-I/O; boundary validation; error-handling completeness; hardcoded secrets; N+1). Invokes `duperpowers-go:go-reviewer` in **quality** mode; security / invariants layered on top within the same opus context.
-
-Why B is fused: R8 originally proposed 5 aspects (SPEC / ARCH / QUAL / TEST / SEC). Spec §9 collapses QUAL + TEST + SEC into one reviewer because:
-
-- QUAL and TEST share rule-table shape (go-writer / go-writer-test IDs)
-- SEC without concurrency-primitive touches is rare — when needed, it rides along with QUAL on the implementation pass
-- One opus can carry all three with aspect-priority heuristics inside its prompt; doubling reviewers past that is diminishing-returns per R8's token/cost estimate
+Go-quality rules (GP-*, SN-*, ERR-*, STY-*, LY-*, MG-*, PS-*) + test correctness (TG-*, TS-*, TT-*, TM-*, TF-*, TA-*) + security / invariants (concurrency: context propagation, goroutine lifetime, mutex-across-I/O; boundary validation; error-handling completeness; hardcoded secrets; N+1). Invokes `duperpowers-go:go-reviewer` in **quality** mode; security / invariants layered on top within the same opus context. (Rationale: R8 + spec §9.)
 
 ### Consolidator (opus)
 
@@ -123,29 +107,7 @@ Merge rule: keep highest-severity description; annotate `[also flagged by: <othe
 - Agreement-weight: multi-reviewer > single-reviewer on ties
 - Aspect-priority: A > B on further ties
 
-**Output shape.**
-
-```
-# L2 Consolidated Review
-
-## Summary (≤ 10 lines)
-<per-reviewer verdicts, top 3 findings, gate verdict>
-
-## Gate
-GATE: ✅ PASS | ❌ FAIL
-Scores:   A = <1-100>   B = <1-100>
-Aspects:  A = <PASS/FAIL>   B = <PASS/FAIL>
-Counts:   CRIT = N   ERR-A = N   ERR-B = N
-
-## Consolidated Issues
-<go-reviewer │-wall format; each issue annotated [flagged by: A, B] when multiple agree>
-
-## Fix-Loop Directive (on FAIL only)
-<file:line + rule IDs + failing aspect + suggested fix per issue>
-
-## Appendix — Raw Reviewer Outputs
-<full text of A's block; full text of B's block — for audit>
-```
+Output shape lives once — see §"Output Format (L2)" below.
 
 ## PASS / FAIL Gate (L2)
 
@@ -226,15 +188,6 @@ NOTES:    <optional>
 
 Duration: <wall-clock>s
 ```
-
-## Process
-
-1. Determine target level (caller-provided OR invoke `duperpowers-go:verify` and use auto-detected level — REV-1).
-2. L0 / L1 / L1.5: dispatch ONE opus reviewer, passing the aspect hint (user-scoped for L0; correctness+arch-fused for L1/L1.5). Reviewer internally invokes `duperpowers-go:go-reviewer` per REV-2. Emit single-reviewer output. Done.
-3. L2: dispatch TWO reviewer opuses in parallel — aspect A (spec mode) + aspect B (quality mode + security layered). Wait for both.
-4. L2: dispatch ONE consolidator opus with both reviewers' structured findings. Consolidator applies dedup + contradiction rules + ranking, computes PASS/FAIL gate, produces summary + appendix.
-5. Emit the full Output block (§"Output Format (L2)"). On FAIL, include the fix-loop directive.
-6. Hand back to caller. Review is pure — caller (user or `duperpowers-go:dispatch`) decides next steps.
 
 ## Relationship to Other Skills
 

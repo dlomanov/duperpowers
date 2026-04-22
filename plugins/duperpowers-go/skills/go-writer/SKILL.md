@@ -303,10 +303,7 @@ if derr, ok := errorsx.Is[*derrors.Error](err); ok { ... }
 **STY-1. One item per line.** When line exceeds ~120 chars OR args/fields > 3 — split to one per line.
 
 ```go
-// OK — fits in 120 chars
-result, err := repo.Find(ctx, bucket, filter)
-
-// GOOD — exceeds 120 chars or 4+ args, split
+// > 120 chars or > 3 args → split one per line
 result, err := repo.Find(ctx,
     bucket,
     filter,

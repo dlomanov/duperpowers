@@ -9,7 +9,7 @@ description: "Use when opus needs to explore codebase topics before planning —
 
 ## Golden Rules
 
-**RS-1.** Research is a required phase. ALWAYS present topic list and wait for user OK before starting.
+**RS-1.** Research is an optional pre-planning phase. When invoked, ALWAYS present topic list and wait for user OK before starting.
 **RS-2.** Main opus runs research. May delegate to Explore agents. Writes findings to files.
 **RS-3.** One file per topic + INDEX.md. Path: `plans/{task}/research/`.
 **RS-4.** After research, tell user: "Research complete. Recommend `/compact` before planning."
@@ -120,8 +120,8 @@ After `/compact`, the opus writing the plan (or the skill authoring pseudocode) 
 
 ## Anchor
 
-- **RS-1.** Research is optional. ALWAYS wait for user confirmation.
-- **RS-2.** Main opus runs research. Writes findings to files.
+- **RS-1.** Research is optional. When invoked, wait for user OK on topic list.
+- **RS-2.** Main opus runs research (may delegate to Explore agents). Writes findings to files.
 - **RS-3.** One file per topic + INDEX.md. Path: `plans/{task}/research/`.
 - **RS-4.** After research, suggest `/compact`.
 - **RS-5.** Opus writing the plan reads INDEX.md first. Does not re-explore researched topics.

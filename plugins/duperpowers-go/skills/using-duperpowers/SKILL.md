@@ -34,7 +34,7 @@ MUST invoke `duperpowers-go:superpowers-overrides` when any superpowers skill lo
 | Writing Go code (*.go) | duperpowers-go:go-writer |
 | Writing Go tests (*_test.go) | duperpowers-go:go-writer-test |
 | Go code review | duperpowers-go:go-reviewer |
-| Go verification (low-level) | duperpowers-go:gocheck (agent) |
+| Go verification (low-level) | `duperpowers-go:gocheck` (Task agent — invoke via Task tool, not Skill) |
 | Writing production pseudocode (L0 → L1) | duperpowers-go:pseudocode-writer |
 | Writing test pseudocode (L1 → L1.5) | duperpowers-go:pseudocode-writer-test |
 | Dispatch L1.5 → L2 (composite transition) | duperpowers-go:dispatch |

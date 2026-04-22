@@ -1,6 +1,6 @@
 ---
 name: pseudocode-writer
-description: "Use when writing production pseudocode (L0 → L1 transition of pseudocode-pipeline). Produces Go skeletons where contracts are real Go and unfinished bodies carry TODO: markers at exact code locations. MUST invoke duperpowers-go:go-writer before editing any .go file. On completion MUST invoke duperpowers-go:verify with L1 target."
+description: "Use when writing production pseudocode (L0 → L1 transition of pseudocode-pipeline). Produces Go skeletons with real-Go contracts and TODO: markers at exact code locations."
 ---
 
 # Pseudocode Writer
@@ -21,12 +21,7 @@ description: "Use when writing production pseudocode (L0 → L1 transition of ps
 
 ## North Star
 
-Pseudocode should read so clear the user would rather hand-write the implementation than review the plan text.
-
-- Use real identifiers (`repo.Get`, `mapper.ToUserDTO`), not placeholders ("the repo", "the mapper")
-- One logical step per line
-- Show control flow through indent and `→`, not through prose
-- Complete sentences only when nuance requires
+Pseudocode so readable the user would rather hand-write than review. Real identifiers (`repo.Get`, not "the repo"); one logical step per line; control flow through indent and `→`, not prose.
 
 ## Anti-patterns
 
@@ -35,17 +30,8 @@ Pseudocode should read so clear the user would rather hand-write the implementat
 | "I'll write abstract pseudo like 'handle the error'" | Too vague. Use `err = ErrNotFound → wrap domain.ErrUserNotFound`. Concrete wins. |
 | "Let me add an 'agent:' section for extra details" | No — single audience. If the detail matters to the user, write it inline. If not, drop it. |
 | "Multiple TODO blocks in one new body looks cleaner" | New bodies: one block. Multiple is for existing-code modifications only. |
-| "I can skip the `go-writer` invocation, I know Go" | PW-1 is mandatory. Conventions drift; loading is cheap. |
-| "Verify can wait until later" | PW-7 is mandatory. A transition is not complete without its safety gate. |
 
 </IMPORTANT>
-
-## Purpose
-
-L0 → L1 transition for the pseudocode-pipeline. Produces Go files where:
-- Contracts (signatures, types, fields, interfaces) are real Go and compile-checked
-- Unfinished bodies carry `TODO:` markers describing the intended behavior
-- The branch reaches L1 guarantees (see spec §4)
 
 ## Format
 
@@ -127,27 +113,10 @@ func (x *UserService) DeleteUser(ctx context.Context, id string, hard bool) erro
 
 Blank lines separate major phases. Indentation shows branch / dependency hierarchy.
 
-## Process
-
-1. Read the user's intent, spec, or brainstorm output
-2. Invoke `duperpowers-go:go-writer` before any `.go` edit (PW-1)
-3. Write real-Go contracts: types, fields, signatures, interfaces, enums
-4. For new functions: add one block `/* TODO[group]: ... */` in body + zero-value return
-5. For modifications: add inline `// TODO[group]: ...` at each change site
-6. Once all planned code sites have TODO markers: invoke `duperpowers-go:verify L1`
-7. On `verify` FAIL: fix missing guarantees (usually compile errors — add missing signatures / types / imports), re-verify
-8. On `verify` PASS: declare L1 reached; hand control back to user
-
-## L1 Guarantees Produced
-
-The branch reaches L1 when `duperpowers-go:verify L1` returns PASS. That skill is the authoritative guarantee list. Summary: real-Go contracts + `TODO:` markers + `gocheck` clean + `dpcheck` clean (when available).
-
 ## Relationship to Other Skills
 
-- `duperpowers-go:go-writer` — mandatory pre-load (PW-1). Provides Go conventions.
-- `duperpowers-go:verify` — mandatory post-invoke (PW-7). Confirms L1 reached.
-- `duperpowers-go:pseudocode-writer-test` — next skill (L1 → L1.5). Introduced in M2 milestone (roadmap).
-- `duperpowers-go:go-writer-test` — not used in this skill (production code only).
+- `duperpowers-go:pseudocode-writer-test` — next skill in the pipeline (L1 → L1.5).
+- `duperpowers-go:go-writer-test` — not loaded here (production code only).
 
 <IMPORTANT>
 
