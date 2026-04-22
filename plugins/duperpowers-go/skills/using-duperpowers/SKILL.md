@@ -29,15 +29,11 @@ MUST invoke `duperpowers-go:superpowers-overrides` when any superpowers skill lo
 
 | Task | Invoke |
 |------|--------|
-| Planning features/tasks | duperpowers-go:plan-orchestrator |
 | Research topics before planning | duperpowers-go:research |
-| Writing test design in plan | duperpowers-go:tdd-design |
-| Assigning agents + validating plan | duperpowers-go:agent-assignment |
 | Superpowers skill loaded | duperpowers-go:superpowers-overrides |
 | Writing Go code (*.go) | duperpowers-go:go-writer |
 | Writing Go tests (*_test.go) | duperpowers-go:go-writer-test |
 | Go code review | duperpowers-go:go-reviewer |
-| Deep branch review | duperpowers-go:make-go-review |
 | Go verification (low-level) | duperpowers-go:gocheck (agent) |
 | Writing production pseudocode (L0 → L1) | duperpowers-go:pseudocode-writer |
 | Writing test pseudocode (L1 → L1.5) | duperpowers-go:pseudocode-writer-test |
@@ -45,7 +41,5 @@ MUST invoke `duperpowers-go:superpowers-overrides` when any superpowers skill lo
 | Verify pseudocode-pipeline level guarantees | duperpowers-go:verify |
 | Level-aware review (L0/L1/L1.5/L2) | duperpowers-go:review |
 | Notes in MIT outline format | duperpowers-go:mit-writer |
-| Focus recovery before planning | duperpowers-go:want-planning |
-| Focus recovery before execution | duperpowers-go:want-executing |
 
 </IMPORTANT>

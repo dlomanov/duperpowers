@@ -106,15 +106,15 @@ Files: internal/order/repo.go, internal/order/postgres/repo.go, internal/order/p
 
 ## Integration
 
-Research is phase 1 in plan-orchestrator workflow:
+Research is an optional pre-planning phase. Typical position:
 
 ```
 0. superpowers:brainstorming → spec
 1. duperpowers-go:research (optional) → research files + INDEX.md → suggest /compact
-2. superpowers:writing-plans → plan (reads INDEX.md first)
+2. superpowers:writing-plans → plan  OR  duperpowers-go:pseudocode-writer → L1 skeletons (both read INDEX.md first)
 ```
 
-After `/compact`, opus writing the plan starts with clean context. Research survives in files.
+After `/compact`, the opus writing the plan (or the skill authoring pseudocode) starts with clean context. Research survives in files.
 
 <IMPORTANT>
 

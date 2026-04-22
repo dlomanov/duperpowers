@@ -56,7 +56,7 @@ duperpowers/
 │       ├── .cursor-plugin/plugin.json
 │       ├── hooks/                         # session-start + PreToolUse hooks
 │       ├── agents/gocheck.md              # Go verification agent
-│       └── skills/                        # 13 skills
+│       └── skills/                        # 12 skills
 ├── standalone/
 │   ├── project-commands/
 │   │   ├── SKILL.md
@@ -75,18 +75,17 @@ duperpowers/
 | Skill | Purpose |
 |-------|---------|
 | `using-duperpowers` | Session bootstrap — override triggers, skill index |
-| `plan-orchestrator` | Workflow: brainstorm → research → plan → assign → execute |
 | `research` | Explore codebase topics before planning (research files + INDEX) |
-| `agent-assignment` | Dependency graph, contract extraction, agent table, validation |
-| `tdd-design` | Test design during planning (case table with hints) |
 | `superpowers-overrides` | Overrides for superpowers defaults |
 | `go-writer` | Go conventions, golden rules, modern Go 1.22+ |
 | `go-writer-test` | Go test conventions, AAA, table-driven, mocks |
 | `go-reviewer` | Two modes: spec + quality, PASS/FAIL verdicts |
-| `make-go-review` | Deep review wrapper for branch diff |
+| `pseudocode-writer` | Transition L0 → L1: production pseudocode skeletons + `TODO:` markers |
+| `pseudocode-writer-test` | Transition L1 → L1.5: test pseudocode + populated cases tables |
+| `dispatch` | Transition L1.5 → L2: plan.md + sonnet fan-out + verify + review + fix-loop |
+| `verify` | Runs gocheck + dpcheck + level-specific guarantee checks (pure, no mutation) |
+| `review` | Level-aware semantic review (L0/L1/L1.5/L2); mandatory at L2 |
 | `mit-writer` | Hierarchical outline notes |
-| `want-planning` | Focus recovery before planning (`/want-planning`) |
-| `want-executing` | Focus recovery before execution (`/want-executing`) |
 | `gocheck` (agent) | Go build/test/lint verification |
 
 ### Standalone

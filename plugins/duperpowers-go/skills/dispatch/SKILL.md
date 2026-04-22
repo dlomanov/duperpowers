@@ -199,7 +199,7 @@ Dispatch mechanics follow `superpowers:dispatching-parallel-agents`. This skill 
    - Explicit instruction: "Load `duperpowers-go:go-writer` before editing any `*.go`. Load `duperpowers-go:go-writer-test` before editing any `*_test.go`. Resolve every `TODO:` in assigned files by replacing it with real code and deleting the marker. Do NOT touch files outside your scope. Do NOT commit — dispatch commits the stage."
    - Expected output: "Report per file: which TODO: markers resolved, which remain (if any), file compiled clean, tests compiled clean."
 4. Dispatch the batch. Wait for all agents to return before starting the next batch.
-5. If any agent reports uncleared `TODO:` — that agent reruns once, or escalates to T3. Do not advance to verify until the batch is clean.
+5. If any agent reports uncleared `TODO:` — rerun that agent once (within-batch self-retry, independent of the post-batch fix-loop budget in DSP-7). If still uncleared after self-retry — T3-escalate. Do not advance to verify until the batch is clean.
 
 ## Fix-Loop
 
@@ -261,6 +261,8 @@ Do not start a 3rd iteration. Continuing past 2 signals a design issue that fix-
 ## Anchor
 
 - **DSP-1.** Precondition `verify L1.5` = PASS. Not PASS → STOP.
+- **DSP-2.** Generate plan.md per spec §8 — pointers + DAG + DoD, not logic duplication.
+- **DSP-3.** One sonnet per file; max 4 parallel; no file overlap.
 - **DSP-4.** Subagents load `go-writer` / `go-writer-test`; resolve every `TODO:` in-place.
 - **DSP-5.** Post-batch `verify L2` mandatory.
 - **DSP-6.** Post-verify `review L2` mandatory.
