@@ -55,7 +55,7 @@ Five sections, in order. Brevity > completeness — anything already in the pseu
 What this delivers and why. For human consumption before dispatch / review. Derived from:
 
 - The branch diff at L1.5 (what files / funcs are touched)
-- `TODO[group-tag]` group tags clustered by group (each group = a logical unit)
+- `TODO: <short-id>` markers clustered by short-id (each id = a logical unit — see `pseudocode-writer` PW-3)
 - Any accompanying issue / ticket reference
 
 ### 2. Pointer map (layered)
@@ -84,7 +84,7 @@ No re-description of what each function does — the file is the source of truth
 Dependency graph at file granularity, derived from:
 
 - Import edges in the diff (who imports whom)
-- `TODO[group]` group tags (same group = logical unit; files in the same group ship together)
+- `TODO: <short-id>` markers (same id = logical unit; files sharing an id ship together)
 - Typical layer dependencies (Edge-in → BL → Edge-out)
 
 Rendered ASCII:
@@ -118,10 +118,10 @@ Max 4 concurrent. `Commit: dispatch` means the dispatch skill commits the combin
 
 ### 5. DoD checklist
 
-Auto-extracted from `TODO[group-tag]` values + pipeline invariants. Short:
+Auto-extracted from `TODO:` short-ids + pipeline invariants. Short:
 
-- [ ] All `TODO[get-user]` markers resolved in `internal/uc/user/*.go`
-- [ ] All `TODO[user-audit]` markers resolved across model + repo
+- [ ] All `TODO: F1` markers resolved in `internal/uc/user/*.go`
+- [ ] All `TODO: AUD` markers resolved across model + repo
 - [ ] `go test ./...` passes
 - [ ] `duperpowers-go:review L2` verdict = PASS
 

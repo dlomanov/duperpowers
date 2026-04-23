@@ -102,10 +102,10 @@ Invocation: `dpcheck --level=<L0|L1|L1.5|L2> --base=main ./...`. If a different 
 Use ripgrep for signal-clean output:
 
 ```
-rg -n 'TODO[:\[]' --type go
+rg -n 'TODO:' --type go
 ```
 
-Matches both plain `TODO:` and group-tagged `TODO[group]:`. Report per-file counts; empty-count on L2 is required, non-empty on L1/L1.5 is required.
+Matches every pseudocode-pipeline marker (plain `TODO:` and id-prefixed `TODO: F1`). Report per-file counts; empty-count on L2 is required, non-empty on L1/L1.5 is required.
 
 ### Diff-based exported-function detection (L1.5 G1.5.1)
 
