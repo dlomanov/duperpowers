@@ -41,9 +41,9 @@ Invoke in the current working directory (must be a Go module root).
 
 Run checks in order; the first level whose ALL guarantees pass is the current level. Stop at first full-pass.
 
-1. **L2** candidate: if `grep -r 'TODO:' --include='*.go' .` in changed scope = 0 matches AND `go test ./...` passes AND `plan.md` exists
-2. **L1.5** candidate: if `TODO:` markers exist AND each new exported function in the diff has a `*_test.go` file with a populated cases table
-3. **L1** candidate: if `TODO:` markers exist AND `gocheck` passes
+1. **L2** candidate: `plan.md` exists AND `grep -r 'TODO:' --include='*.go' .` in changed scope = 0 matches AND `go test ./...` passes
+2. **L1.5** candidate: each new exported function in the diff has a `*_test.go` with a populated cases table AND `gocheck` passes
+3. **L1** candidate: `gocheck` passes (zero or more `TODO:` markers — both shapes are valid L1 per PW-9)
 4. **L0** otherwise
 
 ## Guarantees (referenced from spec §4)
@@ -52,7 +52,7 @@ Run checks in order; the first level whose ALL guarantees pass is the current le
 
 - **G1.1** Public signatures of new/changed methods compile — enforced transitively by G1.4
 - **G1.2** Types, fields, models, interfaces compile — enforced transitively by G1.4
-- **G1.3** At least one `TODO:` marker present in branch diff (block `/* TODO: */` or inline `// TODO:`)
+- **G1.3** Any `TODO:` markers in the branch diff conform to PW-3 — `// TODO:` one-liner or `/* TODO: */` block, intent sentence present, optional uppercase short ID. **Zero markers is also valid** — fully-real-Go L1 is allowed (per PW-9 a branch confined to decidable code carries no `TODO:` at all).
 - **G1.4** `gocheck` passes (build + vet + test compile)
 - **G1.5** `dpcheck` passes (if available; warn if missing)
 

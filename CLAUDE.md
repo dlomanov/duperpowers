@@ -38,7 +38,7 @@ Levels:
 | L | State | Guarantees |
 |---|-------|-----------|
 | L0 | Raw spec / natural-language intent | None beyond the spec itself |
-| L1 | Production pseudocode at exact code locations | Go compiles; contracts real; `TODO:` markers resolvable |
+| L1 | Production pseudocode at exact code locations | Go compiles; contracts real; any `TODO:` markers (where unknowns exist) are resolvable. Zero `TODO:` is also valid — fully-real-Go L1 is allowed |
 | L1.5 | Test pseudocode + populated case tables | L1 + tests build; case rows complete; no panicking stubs |
 | L2 | Sonnet resolved every `TODO:` | L1.5 + gocheck + dpcheck + verify PASS + review PASS + plan.md committed |
 
@@ -98,7 +98,7 @@ Plus `gocheck` sonnet subagent — Go build/test/lint verification invoked by `v
 ### Skill Files
 
 - Frontmatter: `name` (hyphens only) + `description` starting with a trigger phrase ("Use when...", "Use at...", "MUST invoke when...", or a terse project-noun phrase for reference skills such as `go-writer`)
-- Rule IDs are append-only (PW-*, PWT-*, VF-*, REV-*, DSP-*, GP-*, TG-*, RR-*, etc.)
+- Rule IDs are append-only (PW-*, PWT-*, VF-*, REV-*, DSP-*, GP-*, TG-*, RR-*, etc.). IDs only — rule **content** may be reframed in place; mention substantive reframes in the commit message so `git log` surfaces the pivot.
 - `<IMPORTANT>` top + anchor bottom for golden rules
 - Cross-skill references by `duperpowers-go:skill-name`, never file paths
 
