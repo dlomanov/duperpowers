@@ -6,7 +6,7 @@ user_invocable: true
 
 # MIT Outline Notes
 
-Output: ```text block. Zero markdown inside.
+Output: a fenced `text` code block (triple-backticks). Zero markdown inside.
 
 ## Rules
 

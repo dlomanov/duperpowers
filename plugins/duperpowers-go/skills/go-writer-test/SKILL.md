@@ -54,6 +54,11 @@ wantErr: assert.AnError,         // any error
 wantErr: domain.ErrNotFound,     // specific production sentinel
 ```
 
+| Rationalization | Reality |
+|---|---|
+| "Just this once I'll define a custom `errTest = errors.New(...)` for clarity" | No — `assert.AnError` is the canonical sentinel. Custom test errors fragment the codebase and break grep-ability across packages. |
+| "Comparing error strings is fine for a one-off test" | No — string compare breaks under wrapping (`fmt.Errorf("ctx: %w", err)`). Use `assert.ErrorIs`. |
+
 **TG-4. Case order: simple → complex → success LAST.** Reader sees "what can go wrong" before "what goes right". Compose `success` first (with concrete mock values), then derive failure cases from it.
 
 ```go

@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "duperpowers-go",
-      "description": "Go development pipeline: pseudocode-driven (L0/L1/L1.5/L2), TDD, conventions, code review, sonnet fan-out",
+      "description": "Go development companion for superpowers — Go conventions, tests, review, verification. Standalone skills, no pipeline.",
       "source": "./plugins/duperpowers-go",
       "category": "development"
     }

@@ -12,8 +12,10 @@ description: "MUST invoke when any superpowers skill loads. Overrides superpower
 | Superpowers instruction | Action |
 |------------------------|--------|
 | "Use the least powerful model" / "Use opus for complex tasks" | NEVER follow. Execution = sonnet. Planning resolves complexity before execution. |
-| "superpowers:test-driven-development" | NEVER follow during plan execution. Test design is authored as test pseudocode (see duperpowers-go:pseudocode-writer-test) and resolved by sonnet at L1.5 → L2 dispatch. |
+| "superpowers:test-driven-development" | NEVER auto-follow. Test-first is a user choice, not a default. If user explicitly opts in, use it; otherwise write code first, tests on demand. |
 | "superpowers:using-git-worktrees — REQUIRED" | NEVER auto-use. Only when user explicitly requests. |
-| "superpowers:dispatching-parallel-agents" | ALLOWED when steps do not share files, max 4 agents. |
+| "superpowers:dispatching-parallel-agents" | ALLOWED for research / independent exploration when steps do not share files; default cap 4. |
+| "superpowers:verification-before-completion" on Go code | Route through `duperpowers-go:verify` instead of running ad-hoc `go build`/`go test` shell commands. |
+| "superpowers:requesting-code-review" on Go code | Compose with `duperpowers-go:go-reviewer` (spec or quality mode). |
 
 </IMPORTANT>

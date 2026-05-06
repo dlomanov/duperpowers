@@ -1,6 +1,6 @@
 ---
 name: research
-description: "Use when opus needs to explore codebase topics before planning — produces structured research files + INDEX.md for clean-context planning"
+description: "Use before planning a multi-step Go change — produces structured research files + INDEX.md so planning starts with clean context."
 ---
 
 # Research
@@ -111,10 +111,10 @@ Research is an optional pre-planning phase. Typical position:
 ```
 0. superpowers:brainstorming → spec
 1. duperpowers-go:research (optional) → research files + INDEX.md → suggest /compact
-2. superpowers:writing-plans → plan  OR  duperpowers-go:pseudocode-writer → L1 skeletons (both read INDEX.md first)
+2. superpowers:writing-plans → plan (reads INDEX.md first)
 ```
 
-After `/compact`, the opus writing the plan (or the skill authoring pseudocode) starts with clean context. Research survives in files.
+After `/compact`, the opus writing the plan starts with clean context. Research survives in files.
 
 <IMPORTANT>
 

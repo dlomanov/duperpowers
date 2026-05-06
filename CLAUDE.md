@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-Duperpowers-go — Claude Code / Cursor plugin extending [superpowers](https://github.com/obra/superpowers) with a Go development pipeline organized around pseudocode-in-code and verifiable level guarantees. Pure markdown/bash/JSON.
+Duperpowers-go — Claude Code / Cursor plugin extending [superpowers](https://github.com/obra/superpowers) with standalone Go skills (writing, testing, review, verification) and targeted overrides for superpowers defaults that conflict with this user's Go workflow. Pure markdown/bash/JSON.
+
+**No pipeline.** v0.0.x carried a pseudocode-pipeline (L0/L1/L1.5/L2) with sonnet fan-out via `dispatch`. Removed in `0.1.0` after the spine-rule realization (2026-04-28): user writes code, Claude expands user-placed TODOs, reviews, advises. Pipeline orchestration was the inverse — Claude implementing, user reviewing — and produced the "70% problem". Pre-cut state preserved at git tag `pipeline-era`.
 
 ## Testing Changes
 
@@ -22,69 +24,34 @@ No automated tests. Verification: install, start session, confirm hooks fire and
 
 Two hooks in `plugins/duperpowers-go/hooks/`:
 
-1. **session-start** (SessionStart) — reads `using-duperpowers/SKILL.md`, wraps in `<IMPORTANT>` with Go skill pairings, outputs platform-specific JSON. Also probes CWD for `TODO:` markers in `*.go`; if found, appends a one-line BRANCH STATE hint steering to `duperpowers-go:verify`. Fires on startup/clear/compact.
+1. **session-start** (SessionStart) — reads `using-duperpowers/SKILL.md`, wraps in `<IMPORTANT>` with Go skill pairings, outputs platform-specific JSON. Fires on startup/clear/compact.
 2. **skill-override** (PreToolUse:Skill) — if invoked skill is `superpowers:*`, injects reminder to also invoke `superpowers-overrides`. Claude Code only (Cursor lacks PreToolUse).
 
 ### User Preferences Propagation
 
 `templates/claude-md-snippet.md` is the source of truth for personal preferences. INSTALL.md step 4 fetches it from GitHub and appends to `~/.claude/CLAUDE.md`. On new device: run INSTALL.md again — plugin + standalone skills restore automatically, preferences restore from template (~80%), custom additions (like `@RTK.md`) are manual.
 
-### Pseudocode Pipeline (levels as guarantees)
-
-Implementation is organized around **levels (L0/L1/L1.5/L2)** = monotonically growing lists of verifiable branch-state guarantees. Levels are changed by **transition** skills; **modifier** skills check guarantees without mutating state. Plan lives in code (pseudocode + `TODO:` markers at exact locations), not in prose.
-
-Levels:
-
-| L | State | Guarantees |
-|---|-------|-----------|
-| L0 | Raw spec / natural-language intent | None beyond the spec itself |
-| L1 | Production pseudocode at exact code locations | Go compiles; contracts real; any `TODO:` markers (where unknowns exist) are resolvable. Zero `TODO:` is also valid — fully-real-Go L1 is allowed |
-| L1.5 | Test pseudocode + populated case tables | L1 + tests build; case rows complete; no panicking stubs |
-| L2 | Sonnet resolved every `TODO:` | L1.5 + gocheck + dpcheck + verify PASS + review PASS + plan.md committed |
-
-Transitions:
-
-| From → To | Skill | Model |
-|-----------|-------|-------|
-| L0 → L1 | `duperpowers-go:pseudocode-writer` | opus |
-| L1 → L1.5 | `duperpowers-go:pseudocode-writer-test` | opus |
-| L1.5 → L2 | `duperpowers-go:dispatch` (plan.md + sonnet fan-out + verify + review + fix-loop) | opus + sonnet fan-out |
-
-Modifiers (pure, no mutation):
-
-| Skill | Purpose | Model |
-|-------|---------|-------|
-| `duperpowers-go:verify` | gocheck + dpcheck + level-specific guarantee checks | sonnet |
-| `duperpowers-go:review` | level-aware semantic review; L2 = 2 reviewer opuses + 1 consolidator | opus |
-
-Enforcement runs in 4 layers: mechanical (verify + gocheck + dpcheck) → procedural (writer skills) → semantic (review) → user. Fix-loop budget ≤ 2 iter, then escalate to user (BLOCKED).
-
-`plan.md` is a **dispatch artifact** (summary + pointer map + DAG + agent table + DoD checklist) — logic is not duplicated there; logic lives in code.
-
-### Skill Index (12 skills + 1 subagent)
+### Skills (7 + 1 subagent)
 
 Under `plugins/duperpowers-go/skills/`:
 
 | Skill | Purpose |
 |-------|---------|
-| `using-duperpowers` | Session preamble, priority stack, skill index |
-| `research` | Pre-planning codebase exploration, topic files + INDEX.md |
-| `superpowers-overrides` | Overrides superpowers defaults, loaded on any superpowers skill |
-| `pseudocode-writer` | L0 → L1 transition — production pseudocode + `TODO:` markers |
-| `pseudocode-writer-test` | L1 → L1.5 transition — test pseudocode + populated cases tables |
-| `dispatch` | L1.5 → L2 composite — plan.md + sonnet fan-out + verify + review + fix-loop |
-| `verify` | gocheck + dpcheck + level-specific guarantee checks (pure modifier) |
-| `review` | Level-aware semantic review (L0/L1/L1.5/L2); mandatory at L2 |
+| `using-duperpowers` | Session preamble — priority stack, override trigger, skill index |
+| `superpowers-overrides` | Targeted overrides for superpowers defaults; loaded on any superpowers skill |
 | `go-writer` | Project Go conventions for `*.go` |
 | `go-writer-test` | Project Go test conventions for `*_test.go` |
-| `go-reviewer` | Spec + quality review modes, PASS/FAIL with file:line |
-| `mit-writer` | MIT-outline notes (user-facing, no pipeline role) |
+| `go-reviewer` | Spec + quality review modes; PASS/FAIL with file:line evidence |
+| `verify` | gocheck + dpcheck (pure check, no mutation); routes superpowers verification on Go code |
+| `research` | Codebase exploration, topic files + INDEX.md (claude-as-copilot pattern) |
+| `mit-writer` | MIT-outline notes (user-facing) |
 
-Plus `gocheck` sonnet subagent — Go build/test/lint verification invoked by `verify`.
+Plus `gocheck` sonnet subagent — Go build/vet/test-compile verification, invoked by `verify`.
 
 ### Historical Files
 
-`plans/research.md` — MIT-format research notes from before building duperpowers. Analyzed superpowers patterns, led to current architecture. NOT a current spec — the two-plugin structure described there was later merged into one.
+- `plans/research.md` — MIT-format research notes from before building duperpowers. Analyzed superpowers patterns, led to early architecture. NOT a current spec.
+- Git tag `pipeline-era` (commit `cec1706`, v0.0.25) — snapshot of the pseudocode-pipeline era before its removal in `0.1.0`. Reference for what was tried, what worked, and why it was cut. See git log around `0.1.0` for the rationale.
 
 ## Conventions
 
@@ -98,8 +65,9 @@ Plus `gocheck` sonnet subagent — Go build/test/lint verification invoked by `v
 ### Skill Files
 
 - Frontmatter: `name` (hyphens only) + `description` starting with a trigger phrase ("Use when...", "Use at...", "MUST invoke when...", or a terse project-noun phrase for reference skills such as `go-writer`)
-- Rule IDs are append-only (PW-*, PWT-*, VF-*, REV-*, DSP-*, GP-*, TG-*, RR-*, etc.). IDs only — rule **content** may be reframed in place; mention substantive reframes in the commit message so `git log` surfaces the pivot.
+- Rule IDs are append-only (prefix per skill — see each skill's golden rules section). IDs only — rule **content** may be reframed in place; mention substantive reframes in the commit message so `git log` surfaces the pivot.
 - `<IMPORTANT>` top + anchor bottom for golden rules
+    - Short skills (~50 lines or less) that are entirely an `<IMPORTANT>` block may omit the bottom anchor — the whole skill IS the anchor. Reference-style skills without rule lists (e.g., `mit-writer`) may omit `<IMPORTANT>` entirely.
 - Cross-skill references by `duperpowers-go:skill-name`, never file paths
 
 ### Commits

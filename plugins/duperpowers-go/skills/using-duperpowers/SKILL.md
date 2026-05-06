@@ -5,7 +5,7 @@ description: "Use at session start — establishes how duperpowers-go works, def
 
 # Using Duperpowers
 
-Duperpowers-go: Go development pipeline with planning, orchestration, TDD, and superpowers overrides.
+Duperpowers-go: standalone Go skills (writing, testing, review, verification) plus targeted overrides for superpowers defaults that conflict with this user's Go workflow.
 
 <IMPORTANT>
 
@@ -29,17 +29,14 @@ MUST invoke `duperpowers-go:superpowers-overrides` when any superpowers skill lo
 
 | Task | Invoke |
 |------|--------|
-| Research topics before planning | duperpowers-go:research |
-| Superpowers skill loaded | duperpowers-go:superpowers-overrides |
 | Writing Go code (*.go) | duperpowers-go:go-writer |
 | Writing Go tests (*_test.go) | duperpowers-go:go-writer-test |
 | Go code review | duperpowers-go:go-reviewer |
-| Go verification (low-level) | `duperpowers-go:gocheck` (Task agent — invoke via Task tool, not Skill) |
-| Writing production pseudocode (L0 → L1) | duperpowers-go:pseudocode-writer |
-| Writing test pseudocode (L1 → L1.5) | duperpowers-go:pseudocode-writer-test |
-| Dispatch L1.5 → L2 (composite transition) | duperpowers-go:dispatch |
-| Verify pseudocode-pipeline level guarantees | duperpowers-go:verify |
-| Level-aware review (L0/L1/L1.5/L2) | duperpowers-go:review |
+| Verify Go branch is shippable (build + format + tests + vet + dpcheck) | duperpowers-go:verify |
+| Research codebase topics before planning | duperpowers-go:research |
 | Notes in MIT outline format | duperpowers-go:mit-writer |
+| Superpowers skill loaded | duperpowers-go:superpowers-overrides |
+
+> Note: `gocheck` is a Task subagent invoked internally by `verify` (and used by other skills via the Task tool). It is NOT a Skill — never call `Skill(duperpowers-go:gocheck)`.
 
 </IMPORTANT>

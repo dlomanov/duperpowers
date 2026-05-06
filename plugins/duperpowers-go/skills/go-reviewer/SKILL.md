@@ -1,6 +1,6 @@
 ---
 name: go-reviewer
-description: "Go code review (*.go files). Two modes: spec, quality. Structured PASS/FAIL verdicts with file:line evidence."
+description: "Go code review (*.go files). Structured PASS/FAIL verdicts with file:line evidence. Compose with `superpowers:requesting-code-review` per `superpowers-overrides`."
 ---
 
 # Go Reviewer
@@ -47,92 +47,21 @@ CHECK C — `type.PredicateA()` used → read ALL predicate methods of that type
 
 </IMPORTANT>
 
-## Mode
+## Procedure
 
-One mode per invocation. Determined by dispatch:
+Caller (user or composing skill) invokes the reviewer; the body of this skill IS the review procedure. Review changed code. Skip generated and excluded files.
 
-- **spec** — verify step is fully delivered: every deliverable present, criteria met, no scope leak. Input: plan step + `git diff`.
-- **quality** — verify code follows duperpowers-go:go-writer / duperpowers-go:go-writer-test conventions. Input: `git diff`.
+### Scope
 
-## Spec Mode
+The review checks the diff against every rule in `duperpowers-go:go-writer` (production code) and `duperpowers-go:go-writer-test` (test code). Rule IDs (`GP-*`, `SN-*`, `LY-*`, `ERR-*`, `STY-*`, `MG-*`, `PS-*` for production; `TG-*`, `TS-*`, `TT-*`, `TM-*`, `TF-*`, `TA-*` for tests) live in those skills. Do not duplicate them here.
 
-Verify current step ONLY. Understand INTENT before checking boxes — a step that satisfies criteria but misses the point is ☠️ CRIT.
-
-### Checklist
-
-1. Every deliverable in `what` — present in diff
-2. Every item in `criteria` — satisfiable by the code
-3. All changes within declared `scope` — no unrelated files
-4. No TODO / FIXME / stub in new code
-5. No dead code introduced (unused types, funcs, vars)
-6. No unrelated changes (drive-by refactoring)
-
-Ambiguous criteria → check if ANY reasonable interpretation is satisfied → PASS. None satisfied → ☠️ CRIT.
-
-Step says "implement X and Y", only X in diff → check if Y is in a later step. If not → ☠️ CRIT.
-
-## Quality Mode
-
-Review changed code. Skip generated and excluded files. Each check references duperpowers-go:go-writer / duperpowers-go:go-writer-test rule IDs.
-
-### Errors
-
-- **GP-3** inline `errors.New` → sentinel `var errX`
-- **GP-4** unwrapped `return err` → `fmt.Errorf("callee: %w", err)`
-- **ERR-3** `errors.As(err, &T{})` → typed error check (errorsx package)
-- swallowed errors: empty `if err != nil {}` or `_ = fn()`
-- error messages: lowercase, no punctuation, no "failed to"
-
-### Code Structure
-
-- **GP-1** dead branches on DI deps (nil checks on injected fields)
-- **GP-2** sequential ifs on same result → bare `switch {}`. Exception: side-effect annotation
-- **GP-7** change without obvious reason → 👀 WARN
-- **PS-2** models built inside `txmanager.Do` → build before
+Skip items listed in `### Ignore` below.
 
 ### Concurrency
 
 - context propagated, never created mid-chain
 - goroutines have lifetime (ctx, done, errgroup)
 - shared state synchronized, no mutex across I/O
-
-### Layout
-
-- **LY-1** wrong order: type+constructor → exported → unexported, callers before callees
-- **LY-2** interfaces in impl files → root package file, sorted: primitive → infra → business
-- **LY-3** struct fields: generic first, business last
-- **LY-4** domain packages with SQL/column names/JSONB → infra belongs in adapters
-
-### Naming & Style
-
-- **SN-1** non-standard receivers (`x` structs, `r` repo, `v` lambdas)
-- **SN-2** name stutter (`order.OrderService`)
-- **SN-3** 3+ scattered `:=` → `var(...)` block
-- **STY-1** line > 120 chars or > 3 args → split
-- **STY-2** > 2 struct fields on one line → split
-- **STY-3** WHAT comments → only `// WHY:` allowed
-- **STY-4** `interface{}` → `any`
-
-### Modern Go
-
-- **MG-1** if/else defaults → `cmp.Or()`
-- **MG-2** `omitempty` on time/structs → `omitzero`
-- **MG-3** `wg.Add(1)` + goroutine → `wg.Go()`
-
-### Tests
-
-- **TG-3** if/else error check → `assert.ErrorIs`. `var errTest` → `assert.AnError`
-- **TG-4** success case not last
-- **TG-5** concrete mock values in failure cases → `mock.Anything`
-- **TM-2** inline mock chains → break after `EXPECT().`
-- **TM-3** `t.Helper()` in makeSUT/makeMocks → never
-- **TT-5** compact struct literals → always multi-line
-- **TF-2** repeated literals → shared `var(...)` block
-- **TS-1** missing `t.Parallel()`, `context.Background()` → `t.Context()`
-- **TS-2** `happy_path` → `"success"`, underscores → spaces
-- **TT-4** case comments restating name → explain WHY (Russian). Don't flag missing
-- **TT-3** business logic in `before` → mock setup only
-- new exported func/method without test → 💥 ERR
 
 ### Red Flags
 
@@ -151,7 +80,6 @@ Review changed code. Skip generated and excluded files. Each check references du
 ## Output
 
 ```
-MODE: spec | quality
 SUMMARY: 1-2 sentences proving you understood the change
 VERDICT: ✅ PASS | ❌ FAIL
 SCORE: 1-100
@@ -285,7 +213,6 @@ Before outputting verdict:
 - Scope expansion applied: UP + DOWN + ACROSS (RR-1)
 - No contradiction with duperpowers-go:go-writer / duperpowers-go:go-writer-test (RR-2)
 - No scope creep (RR-3)
-- Spec: verified current step only, understood intent
 - VERDICT matches: ≥1 CRIT or ERR = FAIL, else PASS (RR-6)
 - SCORE consistent: 0 issues → 95+, WARNs only → 70-94, any ERR/CRIT → <70
 

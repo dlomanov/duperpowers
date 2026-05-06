@@ -1,6 +1,6 @@
 ---
 name: gocheck
-description: "Go build/test/lint verification. Delegates noisy verification cycle to dedicated agent — preserves main context. Use PROACTIVELY: after completing a logical unit of changes (feature, fix, refactor), before marking task done. Do NOT use: after single exploratory edits, or if you already know the specific error to fix."
+description: "Go build/format/tests/vet verification. Delegates noisy verification cycle to dedicated agent — preserves main context. Use PROACTIVELY: after completing a logical unit of changes (feature, fix, refactor), before marking task done. Do NOT use: after single exploratory edits, or if you already know the specific error to fix."
 tools: Bash
 model: sonnet
 ---
@@ -53,6 +53,8 @@ diff <(printf '%s' "$PRE") <(git diff --stat)
 No output = clean. Output = files changed by formatter.
 
 ## STEP 4 — Tests
+
+If STEP 2 (build) failed, skip `make test-all` — set TESTS = `❌ COMPILATION (see BUILD)` and proceed to STEP 5.
 
 ```bash
 HTTP_PROXY= HTTPS_PROXY= http_proxy= https_proxy= make test-all

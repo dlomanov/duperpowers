@@ -117,8 +117,6 @@ if err := r.DoTx(ctx, bucket, func(ctx context.Context) error {
 
 Skip wrapping: local closures, single obvious call site.
 
-**GP-7. Every code change MUST have an obvious reason.** No dead assignments, no split-then-rejoin chains, no no-op transformations.
-
 **GP-5. Scope drives naming.** Short life = short name. Long life = descriptive name. Position in function signals lifetime.
 
 ```go
@@ -132,6 +130,10 @@ for i, v := range items {
     process(v)
 }
 ```
+
+**GP-7. Every code change MUST have an obvious reason.** No dead assignments, no split-then-rejoin chains, no no-op transformations.
+
+> *(GP-6 retired; IDs are append-only so the gap is intentional.)*
 
 </IMPORTANT>
 

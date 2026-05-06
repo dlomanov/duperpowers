@@ -1,6 +1,6 @@
 # Duperpowers Go
 
-Superpowers companion — Go development pipeline: planning, orchestration, TDD, conventions, testing, code review.
+Superpowers companion for Go: conventions, tests, review, verification. Standalone skills you can invoke from chat — no orchestration, no plan-driven implementation.
 
 One plugin: **duperpowers-go** — everything in one package.
 
@@ -56,7 +56,7 @@ duperpowers/
 │       ├── .cursor-plugin/plugin.json
 │       ├── hooks/                         # session-start + PreToolUse hooks
 │       ├── agents/gocheck.md              # Go verification agent
-│       └── skills/                        # 12 skills
+│       └── skills/                        # 7 skills
 ├── standalone/
 │   ├── project-commands/            # SKILL.md + INSTALL.md
 │   ├── prompt-engineering-rules/    # SKILL.md + INSTALL.md
@@ -73,18 +73,14 @@ duperpowers/
 | Skill | Purpose |
 |-------|---------|
 | `using-duperpowers` | Session bootstrap — override triggers, skill index |
-| `research` | Explore codebase topics before planning (research files + INDEX) |
-| `superpowers-overrides` | Overrides for superpowers defaults |
+| `superpowers-overrides` | Targeted overrides for superpowers defaults that conflict with this Go workflow |
 | `go-writer` | Go conventions, golden rules, modern Go 1.22+ |
 | `go-writer-test` | Go test conventions, AAA, table-driven, mocks |
 | `go-reviewer` | Two modes: spec + quality, PASS/FAIL verdicts |
-| `pseudocode-writer` | Transition L0 → L1: production pseudocode skeletons + `TODO:` markers |
-| `pseudocode-writer-test` | Transition L1 → L1.5: test pseudocode + populated cases tables |
-| `dispatch` | Transition L1.5 → L2: plan.md + sonnet fan-out + verify + review + fix-loop |
-| `verify` | Runs gocheck + dpcheck + level-specific guarantee checks (pure, no mutation) |
-| `review` | Level-aware semantic review (L0/L1/L1.5/L2); mandatory at L2 |
+| `verify` | Runs gocheck + dpcheck. Pure check, no mutation. Routes superpowers verification on Go code |
+| `research` | Explore codebase topics, write research files + INDEX (claude-as-copilot pattern) |
 | `mit-writer` | Hierarchical outline notes |
-| `gocheck` (agent) | Go build/test/lint verification |
+| `gocheck` (agent) | Go build/vet/test-compile verification, invoked by `verify` |
 
 ### Standalone
 

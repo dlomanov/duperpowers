@@ -2,7 +2,7 @@
 
 You are an AI assistant helping a user install the duperpowers-go plugin. Follow these steps exactly.
 
-**There is only one plugin: `duperpowers-go`.** It contains everything: planning pipeline, Go conventions, TDD, code review, orchestration.
+**There is only one plugin: `duperpowers-go`.** It contains everything: Go conventions, tests, review, verification.
 
 **Idempotency:** This installer is safe to run multiple times. Already-installed plugins are checked for updates. Existing CLAUDE.md sections are never duplicated. Standalone skill files require user approval before overwriting.
 
@@ -129,7 +129,6 @@ If yes:
 - Go implementation → MUST invoke `duperpowers-go:go-writer` + `duperpowers-go:go-writer-test`
 - Go code review → MUST invoke `duperpowers-go:go-reviewer`
 - Any superpowers skill loads → MUST invoke `duperpowers-go:superpowers-overrides`
-- Multi-step Go implementation → use pseudocode pipeline: `duperpowers-go:pseudocode-writer` → `pseudocode-writer-test` → `dispatch`
 - Execution = sonnet. Opus for execution = user-approved exception
 - STOP and report BLOCKED after 3 failed attempts
 ```
