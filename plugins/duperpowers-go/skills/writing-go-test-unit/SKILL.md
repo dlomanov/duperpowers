@@ -1,49 +1,54 @@
 ---
-name: writing-go-test
-description: "Use when writing or modifying any *_test.go file - project Go test conventions for white-box unit-tests and integration-tests"
+name: writing-go-test-unit
+description: "Use when writing or modifying any unit *_test.go file (non-repo packages: usecases, gRPC handlers, kafka, adapters). Load before adding a mock, deciding table vs plain test, defining a custom test-error, or extending a success case."
 ---
 
-# Writing Go-Test
+# Writing Go Unit-Test
 
-Convention for writing Go tests
+Convention for writing Go unit tests: white-box, mock-based, covers everything except repositories.
 
-## Reference implementations
+> **Sibling skill:** for repository / integration tests, use `writing-go-test-integration`.
+> **Maintenance:** rules R1, R3-R12, R15, R18, R21, R22 are duplicated with `writing-go-test-integration`. Universal-rule changes must be applied to both skills.
 
-Two complete, compiling examples accompany this skill - read them alongside the rules:
+## The Iron Law
 
-- **Unit tests** - `examples/test-unit/usecase/` (`create.go`, `usecase.go`, `create_test.go`, `usecase_test.go`). Demonstrates rules R1-R24 in a real usecase.
-- **Integration tests** - `examples/test-integration/repo/` (`repo.go`, `create.go`, `list.go`, `update.go`, `repo_test.go`, `create_test.go`). Demonstrates R25-R28 plus all infrastructure rules in a real repository.
+```
+NO NEW TEST WITHOUT READING THE PACKAGE'S EXISTING TESTS FIRST
+```
 
-Each rule below carries a `[example: <path>:<lines>]` reference into one of these trees.
+The whole package shares one `mockList`, one `makeSUT`/`makeMocks`, one `before` shape and one assertion style (R3-R7). If you haven't read them, you can't reuse them.
+
+**Violating the letter of the rules is violating the spirit of the rules.**
+
+## Reference implementation
+
+A complete, compiling unit-test example accompanies this skill - read it alongside the rules:
+
+`examples/usecase/` (`create.go`, `usecase.go`, `create_test.go`, `usecase_test.go`). Demonstrates all rules in this skill in a real usecase.
+
+Each rule below carries a `[example: <path>:<lines>]` reference into this tree.
 
 ## 1. When and how we write tests
 
-We considered tests as a white-box.
-We know the SUT's implementation and reach maximum coverage with a minimum of cases - one case can cover several branches by manipulating the test-case input-data.
-We do not write many cases that probe the SUT from every angle.
+We treat tests as white-box. We know the SUT's implementation and reach maximum coverage with a minimum of cases - one case can cover several branches by manipulating the test-case input-data. We do not write many cases that probe the SUT from every angle.
 
 Goals:
 - increase coverage
 - check functionality (code compiles and runs as expected)
 - pin down behavior (characteristic tests)
 
-Unit vs integration:
-- unit-tests cover everything except repositories: gRPC handlers, kafka, usecases, adapters and etc - through mocks
-- integration tests-cover ONLY repositories
+Unit tests cover everything except repositories: gRPC handlers, kafka, usecases, adapters etc - through mocks.
 
-**R1. White-box.** Tests live in the same package as the implementation under test (no `_test` package suffix).  [example: examples/test-unit/usecase/create_test.go:3]
+**R1. White-box.** Tests live in the same package as the implementation under test (no `_test` package suffix).  [example: examples/usecase/create_test.go:3]
 
-**R2. Integration tests are for repositories only.** Unit tests cover everything else.
-(Section-1 overview; the integration-side detail with the rollback constraint lives in **R25**.)
+**R2. Integration tests are for repositories only.** Unit tests cover everything else - this skill. See `writing-go-test-integration` for repository conventions.
 
 ## 2. Infrastructure
 
-**R3. Reuse existing infrastructure.** Before writing a new test, ALWAYS read every `*_test.go` in the package.
-Identify the package's `mockList`, `makeSUT` / `makeMocks`, `before` patterns, and assertion style - you MUST reuse it.
+**R3. Reuse existing infrastructure.** Before writing a new test, ALWAYS read every `*_test.go` in the package. Identify the package's `mockList`, `makeSUT` / `makeMocks`, `before` patterns, and assertion style - you MUST reuse it.
 
-**R4. Main test file: location and layout.** 
-Test infrastructure (`mockList`, `makeSUT`, `makeMocks`) MUST lives in the package's main test file:
-- repository → `repo_test.go`
+**R4. Main test file: location and layout.**
+Test infrastructure (`mockList`, `makeSUT`, `makeMocks`) MUST live in the package's main test file:
 - usecase → `usecase_test.go`
 - adapter → `adapter_test.go`
 - gRPC handler → `service_test.go`
@@ -57,38 +62,38 @@ Section order inside that file MUST be:
 5. `makeSUT()` / `makeMocks()`
 6. tests
 
-[example: examples/test-integration/repo/repo_test.go:1-51]
+[example: examples/usecase/usecase_test.go:1-27]
 
-**R5. Mock generation: `make mock` only.** 
-Mocks MUST BE ALWAYS generated by `make mock` (under the hood - `mockery`). 
+**R5. Mock generation: `make mock` only.**
+Mocks MUST BE ALWAYS generated by `make mock` (under the hood - `mockery`).
 Never write mocks by hand.
 Every project's `Makefile` defines a `mock` target.
 
-[example: examples/test-unit/usecase/usecase_test.go:8,20-23]
+[example: examples/usecase/usecase_test.go:8,20-23]
 
-**R6. One `mockList` per test package.** 
-Each test package MUST ALWAYS has exactly one `mockList` struct holding **pointers** to all generated mocks the package uses.
-Mocks are constructed in `makeSUT` / `makeMocks`, never elsewhere.  [example: examples/test-unit/usecase/usecase_test.go:11-16, examples/test-integration/repo/repo_test.go:28-30]
+**R6. One `mockList` per test package.**
+Each test package MUST ALWAYS have exactly one `mockList` struct holding **pointers** to all generated mocks the package uses.
+Mocks are constructed in `makeSUT` / `makeMocks`, never elsewhere.  [example: examples/usecase/usecase_test.go:11-16]
 
 **R7. SUT factories: `makeSUT` or `makeMocks`.**
-When the package has one SUT, write `makeSUT(t)` returning `(SUT, mockList)`. 
+When the package has one SUT, write `makeSUT(t)` returning `(SUT, mockList)`.
 When the package has more than one SUT, write `makeMocks(t)` returning `mockList` and inline the SUT construction in each test.
-NEVER place `t.Helper()` inside `makeSUT` / `makeMocks` - they construct things, they are not helpers.  [example: examples/test-unit/usecase/usecase_test.go:18-27]
+NEVER place `t.Helper()` inside `makeSUT` / `makeMocks` - they construct things, they are not helpers.  [example: examples/usecase/usecase_test.go:18-27]
 
 **R8. Test naming.**
 Test names MUST ALWAYS use one of next patterns:
 - `Test{Type}_{PublicMethod}` / `Test{Type}_{privateMethod}` for methods
 - `Test_{PublicFunc}` / `Test_{privateFunc}` for package-level functions
-- `Test{Type}` for the headline integration test of a repository - one per repo, exercises every method together (see **R27**). Example: `TestRepo`.
 
-Test package MUST be same as implemetation package =>  no `_test` suffix (because of whitebox)
+Test package MUST be same as implementation package => no `_test` suffix (because of whitebox).
 
-[example: examples/test-unit/usecase/create_test.go:19, examples/test-integration/repo/create_test.go:14, examples/test-integration/repo/repo_test.go:53]
+[example: examples/usecase/create_test.go:19]
 
 **R9. Parallelism + context.** Always parallel:
 - `t.Parallel()` at the start of the outer test
 - `t.Parallel()` at the start of each `t.Run` body, followed by a blank line
 - Use `t.Context()` instead of `context.Background()`
+
 ```go
 func TestService_Create(t *testing.T) {
     t.Parallel()
@@ -105,9 +110,10 @@ func TestService_Create(t *testing.T) {
 }
 ```
 
-[example: examples/test-unit/usecase/create_test.go:19-20,152-153,160]
+[example: examples/usecase/create_test.go:19-20,152-153,160]
 
 **R10. Mock chain formatting.** One method per line; break after `EXPECT().`
+
 ```go
 // BAD
 m.locker.EXPECT().Acquire(mock.Anything, bucket, lockKey(groupKey)).
@@ -120,15 +126,14 @@ m.locker.EXPECT().
     Once()
 ```
 
-[example: examples/test-unit/usecase/create_test.go:51-54]
+[example: examples/usecase/create_test.go:51-54]
 
 **R11. Assertion library: `testify` defaults.**
-Use package-level `assert.*` / `require.*` by default. 
+Use package-level `assert.*` / `require.*` by default.
 Allocate `r := require.New(t)` / `a := assert.New(t)` ONLY when the test makes more than 3 assertion calls.
-In unit tests, default to `testify/assert` - switch to `require` only when the failure must abort the test. 
-(Integration tests have the opposite default - see **R28**.)
+In unit tests, default to `testify/assert` - switch to `require` only when the failure must abort the test.
 
-[example: examples/test-unit/usecase/create_test.go:162-163, examples/test-integration/repo/repo_test.go:89, examples/test-integration/repo/create_test.go:40]
+[example: examples/usecase/create_test.go:162-163]
 
 **R12. Error assertions.**
 ALWAYS use `assert.ErrorIs(t, err, tt.wantErr)` - handles nil and non-nil uniformly.
@@ -157,15 +162,15 @@ wantErr: domain.ErrNotFound,     // specific production sentinel
 | "Just this once I'll define a custom `errTest = errors.New(...)` for clarity" | No - `assert.AnError` is the canonical sentinel. Custom test errors fragment the codebase and break grep-ability across packages. |
 | "Comparing error strings is fine for a one-off test" | No - string compare breaks under wrapping (`fmt.Errorf("ctx: %w", err)`). Use `assert.ErrorIs`. |
 
-[example: examples/test-unit/usecase/create_test.go:53-56,163]
+[example: examples/usecase/create_test.go:53-56,163]
 
 ## 3. Unit tests
 
-**R13. Table tests: when and shape.** 
-USE a table test as soon as you have ≥2 cases (in unit-tests: single case → plain test, no table; in integration-tests always use a table even for a single case - see **R27**).
+**R13. Table tests: when and shape.**
+USE a table test as soon as you have ≥2 cases (single case → plain test, no table).
 Stick to one template per file. Field order: `name`, `args`, `before`, `want` / `wantErr`.
-ALWAYS group fileds into `args` / `wants` substructs when want-fields more that 2.
-USE type alias on args if test-case's input-data is single struct.
+ALWAYS group fields into `args` / `wants` substructs when want-fields are more than 2.
+USE type alias on args if test-case's input-data is a single struct.
 Always multi-line struct literals - every field on its own line, no compact one-liners.
 Case names use spaces: `"lock busy"`, `"empty result"`. The happy-path case is `"success"`, never `"happy_path"`.
 
@@ -181,11 +186,11 @@ tests := []struct {
     want    ...                    // or `wants wants` when grouped
     wantErr error                  // never bool
 }{
-    // example: examples/test-unit/usecase/create_test.go:37,39-45,46-149
+    // example: examples/usecase/create_test.go:37,39-45,46-149
 }
 ```
 
-[example: examples/test-unit/usecase/create_test.go:37-45]
+[example: examples/usecase/create_test.go:37-45]
 
 ```go
 // BAD - compact one-liner
@@ -199,14 +204,14 @@ tests := []struct {
 ```
 
 **R14. `before` field - mock setup ONLY.**
-YOU MUST ALWAYS ENFORCE signature: `func(args args, m mockList)`. 
+YOU MUST ALWAYS ENFORCE signature: `func(args args, m mockList)`.
 Without args: `func(m mockList)`.
 Omit the field entirely when a case needs no setup; the `if tt.before != nil` guard handles it.
 
-[example: examples/test-unit/usecase/create_test.go:42,50,126,156-158]
+[example: examples/usecase/create_test.go:42,50,126,156-158]
 
 **R15. Case comments - explain WHY.** Above each case, a short comment on the behavior or invariant the case guards. No comments that restate the case name.
-NEVER RESTORE THAT COMMENTS IF USER MANUALLY DELETE THEM!!!!
+NEVER RESTORE COMMENTS THE USER MANUALLY DELETED.
 
 ```go
 // BAD - restates name
@@ -224,7 +229,7 @@ NEVER RESTORE THAT COMMENTS IF USER MANUALLY DELETE THEM!!!!
 },
 ```
 
-[example: examples/test-unit/usecase/create_test.go:46,58,70,94,122]
+[example: examples/usecase/create_test.go:46,58,70,94,122]
 
 **R16. Spell out zero-value `want`s.** Omission means "not under test", not "expect zero". Exception: omitting nil `wantErr` is idiomatic.
 
@@ -244,6 +249,7 @@ NEVER RESTORE THAT COMMENTS IF USER MANUALLY DELETE THEM!!!!
 ```
 
 **R17. AAA inside the test body.** Arrange / Act / Assert separated by one blank line. No section markers.
+
 ```go
 // BAD - markers are noise
 // Arrange
@@ -261,9 +267,10 @@ got, err := sut.Method(t.Context())
 assert.NoError(t, err)
 ```
 
-[example: examples/test-unit/usecase/create_test.go:155-163]
+[example: examples/usecase/create_test.go:155-163]
 
 **R18. Case order - simple → complex → success LAST.** Reader sees "what can go wrong" before "what goes right". Compose `success` first (with concrete mock values and a shared `expected`), then derive failure cases from it.
+
 ```go
 // empty string must not reach the repo - we reject at entry
 {
@@ -295,7 +302,7 @@ assert.NoError(t, err)
 },
 ```
 
-[example: examples/test-unit/usecase/create_test.go:46-149]
+[example: examples/usecase/create_test.go:46-149]
 
 **R19. One case per behavior, not per field.** A test case encodes a behavior - a branch, a validation, an error path. A newly propagated field **extends the existing `success` case**: update the shared `expected` and the mock `Return`. Add a new case ONLY when the field introduces new behavior (new branch, own validation, or new error sentinel).
 
@@ -354,6 +361,7 @@ Triggers that DO justify a new case (a new *behavior* appears with the field):
 - field unlocks a new error path from a dep: `repo.Get` gains a branch returning `ErrExpired`
 
 **R20. Mock argument specificity.** Only the `success` case passes concrete values to mocks - that's where parameter threading is verified. All other cases use `mock.Anything` for params irrelevant to the tested behavior.
+
 ```go
 // BAD - concrete values duplicated in failure case
 m.repo.EXPECT().
@@ -368,9 +376,9 @@ m.repo.EXPECT().
     Once()
 ```
 
-[example: failure → examples/test-unit/usecase/create_test.go:51-54; success → examples/test-unit/usecase/create_test.go:127-145]
+[example: failure → examples/usecase/create_test.go:51-54; success → examples/usecase/create_test.go:127-145]
 
-**R21. Test data - `gofakeit` vs hardcoded.** 
+**R21. Test data - `gofakeit` vs hardcoded.**
 YOU MUST USE `gofakeit` for test-values by default.
 YOU MUST USE specific values ONLY if that value has meaning for the test-case.
 
@@ -395,10 +403,10 @@ YOU MUST USE specific values ONLY if that value has meaning for the test-case.
 },
 ```
 
-[example: examples/test-unit/usecase/create_test.go:23-29]
+[example: examples/usecase/create_test.go:23-29]
 
-**R22. Shared values - `var(...)` block before the table.** 
-Values shared across cases live in a `var(...)` block before the table; infrastructure constants (e.g. `bucket`) are package-level `const`. 
+**R22. Shared values - `var(...)` block before the table.**
+Values shared across cases live in a `var(...)` block before the table; infrastructure constants (e.g. `bucket`) are package-level `const`.
 Each case shows only what VARIES.
 
 ```go
@@ -429,9 +437,9 @@ id := gofakeit.UUID()
 },
 ```
 
-[example: examples/test-unit/usecase/create_test.go:22-35]
+[example: examples/usecase/create_test.go:22-35]
 
-**R23. `go:build unit` tag.** Add when the project uses a build-tag split.  [example: examples/test-unit/usecase/create_test.go:1]
+**R23. `go:build unit` tag.** Add when the project uses a build-tag split.  [example: examples/usecase/create_test.go:1]
 
 **R24. Goroutine sync - `synctest`.** When the SUT spawns goroutines, wrap the test body in `synctest.Test` and call `synctest.Wait()` after Act.
 
@@ -449,17 +457,7 @@ synctest.Test(t, func(t *testing.T) {
 })
 ```
 
-## 4. Integration tests
-
-**R25. Integration tests run only against repositories, isolated by transaction rollback.**  [example: examples/test-integration/repo/repo_test.go:90-97, examples/test-integration/repo/create_test.go:41-47]
-
-**R26. `go:build integration` tag.** Add when the project uses a build-tag split.  [example: examples/test-integration/repo/repo_test.go:1]
-
-**R27. Repository test shape: one happy `TestRepo` + table tests for the rest.** Write one long happy-path `TestRepo` that exercises every method on the repository. Cover negative cases the happy path does not reach with table tests, for coverage. Always use a table for these per-method negative tests, even when there's only a single case - new cases will be added as the repo grows, and starting from a table makes extension trivial (counter to **R13**, which forbids tables for single cases in unit tests).  [example: examples/test-integration/repo/repo_test.go:53-98, examples/test-integration/repo/create_test.go:14-49]
-
-**R28. Default to `testify/require` in integration tests.** A half-failed integration test typically leaves shared state in a bad shape - fail-fast prevents that.  [example: examples/test-integration/repo/create_test.go:9,40,46]
-
-## 5. Golden Rules
+## 4. Golden Rules
 
 Most-violated rules. If the code doesn't follow them, that's the first thing to fix.
 - **R12** `assert.ErrorIs` + `assert.AnError` - never if/else, never `var errTest`

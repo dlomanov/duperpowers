@@ -30,7 +30,8 @@ MUST invoke `duperpowers-go:superpowers-overrides` when any superpowers skill lo
 | Task | Invoke |
 |------|--------|
 | Writing Go code (*.go) | duperpowers-go:go-writer |
-| Writing Go tests (*_test.go) | duperpowers-go:go-writer-test |
+| Writing Go unit-test (*_test.go in non-repo packages: usecases, gRPC handlers, kafka, adapters) | duperpowers-go:writing-go-test-unit |
+| Writing Go integration-test (*_test.go in repository package, `go:build integration`) | duperpowers-go:writing-go-test-integration |
 | Go code review | duperpowers-go:go-reviewer |
 | Verify Go branch is shippable (build + format + tests + vet + dpcheck) | duperpowers-go:verify |
 | Research codebase topics before planning | duperpowers-go:research |

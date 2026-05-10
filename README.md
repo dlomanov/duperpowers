@@ -75,7 +75,8 @@ duperpowers/
 | `using-duperpowers` | Session bootstrap — override triggers, skill index |
 | `superpowers-overrides` | Targeted overrides for superpowers defaults that conflict with this Go workflow |
 | `go-writer` | Go conventions, golden rules, modern Go 1.22+ |
-| `go-writer-test` | Go test conventions, AAA, table-driven, mocks |
+| `writing-go-test-unit` | Go unit-test conventions (non-repo packages): white-box, mock-based, AAA, table-driven |
+| `writing-go-test-integration` | Go integration-test conventions (repository packages): real DB, transaction-rollback isolation, `TestRepo` headline + per-method tables |
 | `go-reviewer` | Two modes: spec + quality, PASS/FAIL verdicts |
 | `verify` | Runs gocheck + dpcheck. Pure check, no mutation. Routes superpowers verification on Go code |
 | `research` | Explore codebase topics, write research files + INDEX (claude-as-copilot pattern) |
