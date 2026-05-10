@@ -60,7 +60,9 @@ NO REPEATS across sections. Reference, don't re-explain.
 
 ## Examples
 
-GOOD — demonstrates declaration + question at level 0, Socratic chains, the point:, diagram:
+Inline taste — GOOD vs BAD, then deeper galleries below.
+
+GOOD — declaration + question at level 0, Socratic chain, diagram, the point:
 
   replication with a primary
     primary sequences all writes, sends to backups
@@ -69,11 +71,6 @@ GOOD — demonstrates declaration + question at level 0, Socratic chains, the po
     client --[write]--> primary --[replicate]--> backup-1
                                             \--> backup-2
 
-  what if primary crashes?
-    remove chunkserver from all chunkhandle lists
-    for each chunk where it was primary
-      wait for lease to expire
-      grant lease to another chunkserver
   why are leases helpful?
     coordinator cannot distinguish "crashed" from "network broken"
     what if coordinator designates new primary while old one is active?
@@ -90,4 +87,14 @@ BAD — prose, no hierarchy, capitalized, periods:
   chunkhandle lists. For each chunk, the system waits for the
   lease to expire before granting it to another server. Leases
   prevent split-brain by ensuring only one primary at a time.
+
+### Galleries
+
+For extended examples drawn from MIT 6.824 lecture notes (the canonical source of this style), see sibling files in this skill directory:
+
+- `examples/socratic-chains.md` — extended question-answer chains: cascading why?, counterexample reasoning, trace-as-answer, critique by construction
+- `examples/diagrams.md` — inline ASCII gallery: component/flow, timestamp interval, parallel actors, layered state, message-sequence, decision tree
+- `examples/full-section.md` — complete `+++` sections integrating all rules: transactions/serializability, commit-wait, BFT design 2
+
+Sources: MIT 6.824 distributed systems lecture notes (Raft, Zookeeper, 2PC, Spanner, Chain Replication, FaRM, BFT) at `https://pdos.csail.mit.edu/6.824/notes/`.
 
