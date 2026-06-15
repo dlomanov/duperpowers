@@ -1,15 +1,10 @@
-# Duperpowers Go
+# Duperpowers
 
-Superpowers companion for Go: conventions, tests, review, verification. Standalone skills you can invoke from chat — no orchestration, no plan-driven implementation.
+A collection of **portable features** for Claude Code / Cursor - bundles of skills + agents +
+scripts + hooks you install straight into your `~/.claude/` (or a project's `.claude/`). Pure
+markdown/bash/JSON. No marketplace plugin.
 
-One plugin: **duperpowers-go** — everything in one package.
-
-## Prerequisites
-
-- [superpowers](https://github.com/obra/superpowers) plugin (required)
-- [RTK](https://github.com/anthropics/rtk) (optional): `brew install rtk && rtk init -g`
-
-## Quick Install
+## Install
 
 Works in both Claude Code and Cursor. Tell your AI:
 
@@ -17,118 +12,49 @@ Works in both Claude Code and Cursor. Tell your AI:
 Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/INSTALL.md
 ```
 
-This will detect your platform, install superpowers (if missing), duperpowers-go, and offer to configure anchor rules, personal preferences, and standalone skills. The installer is idempotent.
+The agent shows the feature list and walks you through install/update/remove, asking `y/n` at each
+step. Each feature installs either as a **symlink** to this checkout (live; `update` = `git pull`)
+or as a **copy** (portable - survives without the checkout, for moving onto another machine/repo).
 
-## Manual Install
+## Features
 
-### Claude Code
+| Feature | Depends on | What it gives |
+|---------|-----------|---------------|
+| `session-state` | - | `kv.sh` - per-session key/value store |
+| `context` | `session-state` | Cross-session memory: WAL log, summaries, recall, precompact |
+| `prompt-engineering-rules` | - | Reference skill for writing CLAUDE.md / SKILL.md / AI instruction files |
+| `mit-writer` | - | MIT-outline hierarchical notes skill |
 
-```bash
-# Add marketplace
-claude plugin marketplace add dlomanov/duperpowers
-
-# Install
-claude plugin install duperpowers-go
-```
-
-If old `duperpowers` (without -go) is installed: `claude plugin uninstall duperpowers`
-
-### Cursor
-
-```
-/add-plugin superpowers
-/add-plugin duperpowers-go
-```
-
-## CLAUDE.md Customization
-
-The plugin works without touching your CLAUDE.md. For personal preferences (commit conventions, progress visibility, validation rules), see [`templates/claude-md-snippet.md`](templates/claude-md-snippet.md) and append the relevant sections to your `~/.claude/CLAUDE.md`.
-
-## Repository Structure
+## Repository structure
 
 ```
 duperpowers/
-├── .claude-plugin/
-│   └── marketplace.json
-├── plugins/
-│   └── duperpowers-go/
-│       ├── .claude-plugin/plugin.json
-│       ├── .cursor-plugin/plugin.json
-│       ├── hooks/                         # session-start + PreToolUse hooks
-│       ├── agents/gocheck.md              # Go verification agent
-│       └── skills/                        # 7 skills
-├── standalone/
-│   ├── project-commands/            # SKILL.md + INSTALL.md
-│   ├── prompt-engineering-rules/    # SKILL.md + INSTALL.md
-│   ├── english-practice/            # SKILL.md + INSTALL.md
-│   └── spawn-worker/                # SKILL.md + INSTALL.md + bash helpers
-├── templates/
-│   └── claude-md-snippet.md
-├── INSTALL.md
+├── features/
+│   ├── _lib/feature-hooks.sh        # hook dispatcher (shared infra)
+│   ├── session-state/               # INSTALL.md + scripts/
+│   ├── context/                     # INSTALL.md + skills/ + agents/ + scripts/ + hooks/
+│   ├── prompt-engineering-rules/    # INSTALL.md + skills/
+│   └── mit-writer/                  # INSTALL.md + skills/
+├── templates/claude-md-snippet.md   # optional personal-preferences append (not a feature)
+├── INSTALL.md                       # the single install entry (agent-facing)
+├── CLAUDE.md
 └── README.md
 ```
 
-## Skills Reference
+## Personal preferences (optional)
 
-| Skill | Purpose |
-|-------|---------|
-| `using-duperpowers` | Session bootstrap — override triggers, skill index |
-| `superpowers-overrides` | Targeted overrides for superpowers defaults that conflict with this Go workflow |
-| `go-writer` | Go conventions, golden rules, modern Go 1.22+ |
-| `writing-go-test-unit` | Go unit-test conventions (non-repo packages): white-box, mock-based, AAA, table-driven |
-| `writing-go-test-integration` | Go integration-test conventions (repository packages): real DB, transaction-rollback isolation, `TestRepo` headline + per-method tables |
-| `go-reviewer` | Two modes: spec + quality, PASS/FAIL verdicts |
-| `verify` | Runs gocheck + dpcheck. Pure check, no mutation. Routes superpowers verification on Go code |
-| `research` | Explore codebase topics, write research files + INDEX (claude-as-copilot pattern) |
-| `mit-writer` | Hierarchical outline notes |
-| `gocheck` (agent) | Go build/vet/test-compile verification, invoked by `verify` |
+[`templates/claude-md-snippet.md`](templates/claude-md-snippet.md) is the author's optional CLAUDE.md
+snippet (commit conventions, validation rules, output format). Copy or adapt the relevant sections
+into your own `~/.claude/CLAUDE.md` manually. It is not a feature and is not installed by `INSTALL.md`.
 
-### Standalone
+## Contributing a feature
 
-| Skill | Purpose | Install |
-|-------|---------|---------|
-| `project-commands` | Make targets, test commands, go doc protocol | [INSTALL.md](standalone/project-commands/INSTALL.md) |
-| `prompt-engineering-rules` | Reference for writing CLAUDE.md, SKILL.md, AI instruction files | [INSTALL.md](standalone/prompt-engineering-rules/INSTALL.md) |
-| `english-practice` | Passive English practice — responds in English, corrects grammar | [INSTALL.md](standalone/english-practice/INSTALL.md) |
-| `spawn-worker` | Spawn parallel Claude Code worker sessions in new Ghostty tabs (macOS + Ghostty) | [INSTALL.md](standalone/spawn-worker/INSTALL.md) |
+See [`INSTALL.md`](INSTALL.md) and the "Adding a Feature" section of [`CLAUDE.md`](CLAUDE.md). In short:
 
-Not part of the plugin — install manually per project or globally.
-
-```
-Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/project-commands/INSTALL.md
-Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/prompt-engineering-rules/INSTALL.md
-Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/english-practice/INSTALL.md
-Fetch and follow instructions from https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/spawn-worker/INSTALL.md
-```
-
-## How Overrides Work
-
-The plugin injects context via session-start hook: full `using-duperpowers` skill + Go skill pairings. A PreToolUse hook fires on every Skill invocation — when a superpowers skill loads, it reminds to also invoke superpowers-overrides.
-
-Priority hierarchy:
-1. User instructions (CLAUDE.md) — highest
-2. Plugin skills (superpowers + duperpowers-go)
-3. Default system prompt — lowest
-
-## For Contributors
-
-### Adding a skill
-
-1. Create `plugins/duperpowers-go/skills/<skill-name>/SKILL.md`
-2. Add YAML frontmatter with `name`, `description`
-3. Use trigger patterns in description: `"Use when [condition]"`
-4. Update this README
-
-### Testing locally
-
-```bash
-cd duperpowers
-claude plugin install duperpowers-go
-
-# Start new session and verify
-claude
-> Tell me about your duperpowers
-```
+1. Create `features/<name>/INSTALL.md` with frontmatter (`name` / `description` / `dependencies` /
+   `platform` / `provides`).
+2. Put leaf items under `features/<name>/{skills,agents,scripts,hooks}/`.
+3. Add a row to the feature index in `INSTALL.md` and to the Features table above.
 
 ## License
 

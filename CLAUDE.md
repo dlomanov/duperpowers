@@ -4,75 +4,104 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-Duperpowers-go — Claude Code / Cursor plugin extending [superpowers](https://github.com/obra/superpowers) with standalone Go skills (writing, testing, review, verification) and targeted overrides for superpowers defaults that conflict with this user's Go workflow. Pure markdown/bash/JSON.
+Duperpowers - a **features-only** repo. It is a collection of portable **features**: self-contained
+bundles of skills + agents + scripts + hooks, installed directly into a user's `~/.claude/` via the
+agent-facing repo-root `INSTALL.md`. Pure markdown/bash/JSON. There is no marketplace plugin, no
+`plugin.json`, no `marketplace.json` - installation is by symlink/copy, not the plugin system.
 
-**No pipeline.** v0.0.x carried a pseudocode-pipeline (L0/L1/L1.5/L2) with sonnet fan-out via `dispatch`. Removed in `0.1.0` after the spine-rule realization (2026-04-28): user writes code, Claude expands user-placed TODOs, reviews, advises. Pipeline orchestration was the inverse — Claude implementing, user reviewing — and produced the "70% problem". Pre-cut state preserved at git tag `pipeline-era`.
+### History
 
-## Testing Changes
+Earlier this repo was a marketplace plugin. First `duperpowers-go` - a Go development companion
+(go-writer, go-reviewer, Go test skills, a `verify`/`gocheck` chain, `superpowers-overrides`). It was
+then trimmed to `duperpowers` (the `using-duperpowers` session preamble + the `mit-writer` notes skill).
+In this change the marketplace plugin was removed entirely and the repo refocused on the features
+mechanism; `mit-writer` survived by becoming a feature. Earlier still, v0.0.x carried a
+pseudocode-pipeline (L0/L1/L1.5/L2, sonnet fan-out via `dispatch`), cut in `0.1.0` (git tag
+`pipeline-era`, commit `cec1706`). All plugin and Go history lives in git history.
+
+## Testing changes
+
+There is no `claude plugin install` anymore - features are installed via `INSTALL.md`.
+
+Fastest check: run a feature's shipped test scripts.
 
 ```bash
-claude plugin install duperpowers-go   # install from local checkout
-# start new session, then:
-> Tell me about your duperpowers
+bash features/session-state/scripts/test_kv.sh        # expect: 17 passed, 0 failed
+bash features/context/scripts/test_logwriter.sh       # expect: 27 passed, 0 failed
 ```
 
-No automated tests. Verification: install, start session, confirm hooks fire and skills load.
+Full-install verification: follow `INSTALL.md` against a throwaway `CLAUDE_CONFIG_DIR` pointed at a dir
+**under `~/src/sand/docs/`** (never `mktemp -d` / system temp - banned in this workflow). Then confirm
+symlinks resolve and hooks fire. For example:
+
+```bash
+mkdir -p ~/src/sand/docs/dp-test && CLAUDE_CONFIG_DIR=~/src/sand/docs/dp-test  # then run INSTALL.md
+```
 
 ## Architecture
 
-### Hook Chain (per session)
+The features mechanism **is** the architecture.
 
-Two hooks in `plugins/duperpowers-go/hooks/`:
+- **`INSTALL.md` (repo root)** - the feature index + the generic install/update/remove/installed?
+  protocol. It is agent-facing: a user pastes the file (or a URL to it) and the agent runs the
+  protocol, asking `y/n` at each install/update/remove and before pulling in dependencies. Each
+  `features/<name>/INSTALL.md` adds only feature-specific notes on top.
+- **Per-feature frontmatter.** A feature's `INSTALL.md` frontmatter declares `name`, `description`,
+  `dependencies`, `platform`, and a `provides` manifest (`skills`/`agents`/`scripts`/`hooks`). The
+  protocol links/unlinks exactly what `provides` lists.
+- **Install mode (user choice):** `symlink` (registry entry points at this checkout; `update` =
+  `git pull`) or `copy` (portable - survives without the checkout, for moving into another
+  machine/repo). Leaf items (skills/agents/scripts/hooks) are always symlinked **into** the registry
+  entry `~/.claude/features/<name>/`, so removal is clean either way.
+- **Hook dispatcher:** `settings.json` is touched once per event - one entry calling
+  `feature-hooks.sh <Event>` (shipped from `features/_lib/feature-hooks.sh`). It runs every script in
+  `~/.claude/hooks/<Event>.d/`, each emitting PLAIN TEXT, and merges into one
+  `{hookSpecificOutput:{hookEventName, additionalContext}}` envelope. A feature drops a symlink to its
+  hook script into `<Event>.d/`; remove = `rm`.
+- **Sibling-resolution gotcha:** feature hook scripts run via a symlink in `<Event>.d/`, so they MUST
+  resolve sibling scripts from `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/scripts/`, never from their own
+  `$0`/`BASH_SOURCE` dir (which points at `<Event>.d/`, not `scripts/`).
 
-1. **session-start** (SessionStart) — reads `using-duperpowers/SKILL.md`, wraps in `<IMPORTANT>` with Go skill pairings, outputs platform-specific JSON. Fires on startup/clear/compact.
-2. **skill-override** (PreToolUse:Skill) — if invoked skill is `superpowers:*`, injects reminder to also invoke `superpowers-overrides`. Claude Code only (Cursor lacks PreToolUse).
+Current features under `features/`:
 
-### User Preferences Propagation
-
-`templates/claude-md-snippet.md` is the source of truth for personal preferences. INSTALL.md step 4 fetches it from GitHub and appends to `~/.claude/CLAUDE.md`. On new device: run INSTALL.md again — plugin + standalone skills restore automatically, preferences restore from template (~80%), custom additions (like `@RTK.md`) are manual.
-
-### Skills (7 + 1 subagent)
-
-Under `plugins/duperpowers-go/skills/`:
-
-| Skill | Purpose |
-|-------|---------|
-| `using-duperpowers` | Session preamble — priority stack, override trigger, skill index |
-| `superpowers-overrides` | Targeted overrides for superpowers defaults; loaded on any superpowers skill |
-| `go-writer` | Project Go conventions for `*.go` |
-| `go-writer-test` | Project Go test conventions for `*_test.go` |
-| `go-reviewer` | Spec + quality review modes; PASS/FAIL with file:line evidence |
-| `verify` | gocheck + dpcheck (pure check, no mutation); routes superpowers verification on Go code |
-| `research` | Codebase exploration, topic files + INDEX.md (claude-as-copilot pattern) |
-| `mit-writer` | MIT-outline notes (user-facing) |
-
-Plus `gocheck` sonnet subagent — Go build/vet/test-compile verification, invoked by `verify`.
-
-### Historical Files
-
-- `plans/research.md` — MIT-format research notes from before building duperpowers. Analyzed superpowers patterns, led to early architecture. NOT a current spec.
-- Git tag `pipeline-era` (commit `cec1706`, v0.0.25) — snapshot of the pseudocode-pipeline era before its removal in `0.1.0`. Reference for what was tried, what worked, and why it was cut. See git log around `0.1.0` for the rationale.
+| Feature | Deps | What it gives |
+|---------|------|---------------|
+| `session-state` | - | `kv.sh` - pure per-session key/value store (`~/.claude/session_state/*.state`) |
+| `context` | `session-state` | Cross-session WAL memory: log, summaries, recall, precompact (skills + agents + hooks) |
+| `prompt-engineering-rules` | - | Reference skill for writing CLAUDE.md / SKILL.md / AI instruction files |
+| `mit-writer` | - | MIT-outline hierarchical notes skill (user-facing) |
 
 ## Conventions
 
-### Adding a Skill
+### Adding a Feature
 
-1. Create `plugins/duperpowers-go/skills/<skill-name>/SKILL.md`
-2. Add to skill index in `using-duperpowers/SKILL.md`
-3. Update README.md skills table
-4. If skill needs hook integration, update `hooks/hooks.json`
+1. Create `features/<name>/INSTALL.md` with the frontmatter schema (`name`, `description`,
+   `dependencies`, `platform`, `provides`) - see an existing feature's INSTALL.md.
+2. Put leaf items under `features/<name>/{skills,agents,scripts,hooks}/`. Hook scripts emit PLAIN TEXT
+   (the dispatcher wraps them) and resolve siblings from `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/scripts/`.
+3. Add a row to the feature index table in `INSTALL.md`.
+4. Add a row to the features table in README.md.
+5. Ship test scripts in the feature dir (not linked) for post-install verification.
 
-### Skill Files
+### Skill / file conventions
 
-- Frontmatter: `name` (hyphens only) + `description` starting with a trigger phrase ("Use when...", "Use at...", "MUST invoke when...", or a terse project-noun phrase for reference skills such as `go-writer`)
-- Rule IDs are append-only (prefix per skill — see each skill's golden rules section). IDs only — rule **content** may be reframed in place; mention substantive reframes in the commit message so `git log` surfaces the pivot.
-- `<IMPORTANT>` top + anchor bottom for golden rules
-    - Short skills (~50 lines or less) that are entirely an `<IMPORTANT>` block may omit the bottom anchor — the whole skill IS the anchor. Reference-style skills without rule lists (e.g., `mit-writer`) may omit `<IMPORTANT>` entirely.
-- Cross-skill references by `duperpowers-go:skill-name`, never file paths
+- Frontmatter: `name` (hyphens only) + `description` starting with a trigger phrase ("Use when...",
+  "Use at...", "MUST invoke when...", or a terse project-noun phrase for reference skills such as
+  `mit-writer`).
+- Rule IDs are append-only (prefix per skill - see each skill's golden rules section). IDs only - rule
+  **content** may be reframed in place; mention substantive reframes in the commit message so `git log`
+  surfaces the pivot.
+- `<IMPORTANT>` top + anchor bottom for golden rules.
+    - Short skills (~50 lines or less) that are entirely an `<IMPORTANT>` block may omit the bottom
+      anchor - the whole skill IS the anchor. Reference-style skills without rule lists (e.g.,
+      `mit-writer`) may omit `<IMPORTANT>` entirely.
+- Cross-references between skills use the bare skill name - once installed they live at
+  `~/.claude/skills/<name>`. (No plugin prefix; there is no plugin.)
 
 ### Commits
 
-- Never add `Co-Authored-By: Claude*` or AI attribution
-- ALWAYS bump version in both `plugin.json` files with every commit that changes plugin content (skills, templates, hooks, README)
-- Version in both `plugin.json` files must stay in sync
-- Never stage: `.claude/*`, `task*.md`, `plans/*`, `docs/plans/*`, `docs/specs/*`. The user's home `~/.claude/CLAUDE.md` is off-limits too — the project `CLAUDE.md` at the repo root is tracked and edited normally.
+- Never add `Co-Authored-By: Claude*` or AI attribution.
+- Versioning is via git - there is no `plugin.json` to bump.
+- Never stage: `.claude/*`, `task*.md`, `plans/*`, `docs/plans/*`, `docs/specs/*`. The user's home
+  `~/.claude/CLAUDE.md` is off-limits too - the project `CLAUDE.md` at the repo root is tracked and
+  edited normally.

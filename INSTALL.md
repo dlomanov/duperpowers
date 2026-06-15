@@ -1,237 +1,135 @@
-# Duperpowers Go — Installation Instructions
+# Install Duperpowers Features
 
-You are an AI assistant helping a user install the duperpowers-go plugin. Follow these steps exactly.
+> **You are an AI agent.** A user pasted this file (or a prompt pointing at it) to install one
+> or more *features* from this repo into their `~/.claude/`. Follow the protocol below exactly.
+> **Always ask `y/n` before each install/update/remove and before pulling in dependencies.**
 
-**There is only one plugin: `duperpowers-go`.** It contains everything: Go conventions, tests, review, verification.
-
-**Idempotency:** This installer is safe to run multiple times. Already-installed plugins are checked for updates. Existing CLAUDE.md sections are never duplicated. Standalone skill files require user approval before overwriting.
-
-| Rationalization | Reality |
-|----------------|---------|
-| "Plugin is already installed, nothing to do" | Check for updates. Installed ≠ up to date |
-| "User probably doesn't need standalone skills, I'll skip" | ALWAYS ask. Never skip optional steps — let the user decide |
-| "The command failed but I can work around it" | STOP and report the error. User decides next step |
-| "CLAUDE.md section looks similar, I'll overwrite it" | Check for exact heading match. Never duplicate |
-
-## Platform Detection
-
-Determine your platform:
-- **Claude Code** — you have the `Bash` tool and can run `claude plugin` CLI commands
-- **Cursor** — you have terminal access and the `/add-plugin` command
-
-If unsure, ask the user: **"Are you using Claude Code or Cursor?"**
-
-Follow the section matching your platform below. After installing plugins, both platforms share the same CLAUDE.md and standalone skills steps.
+A **feature** is a self-contained bundle of skills + agents + scripts + hooks, logically grouped,
+with its own `features/<name>/INSTALL.md`. This file is the index + the generic protocol; each
+feature's `INSTALL.md` only adds feature-specific notes on top of this protocol.
 
 ---
 
-# Claude Code
+## Feature index
 
-**Important:** The `claude plugin` commands below are real CLI commands (added in Claude Code 2.1+). Run them via Bash. If a command fails with "unknown command", STOP and tell the user their Claude Code version may be too old — they should update with `claude update`.
+| Feature | Depends on | What it gives | INSTALL.md |
+|---------|-----------|---------------|------------|
+| `session-state` | - | `kv.sh` - per-session key/value store (`~/.claude/session_state/*.state`) | `features/session-state/INSTALL.md` |
+| `context` | `session-state` | Cross-session memory: WAL log, summaries, recall, precompact (skills + agents + hooks) | `features/context/INSTALL.md` |
+| `prompt-engineering-rules` | - | Reference skill for writing CLAUDE.md / SKILL.md / AI instruction files | `features/prompt-engineering-rules/INSTALL.md` |
+| `mit-writer` | - | MIT-outline hierarchical notes skill | `features/mit-writer/INSTALL.md` |
 
-## Prerequisites
-
-```bash
-claude plugin list
-```
-
-Check the output. Install only what is missing:
-
-- If `superpowers` is NOT in the list:
-```bash
-claude plugin install superpowers@claude-plugins-official
-```
-
-- Add the marketplace (safe to run if already added):
-```bash
-claude plugin marketplace add dlomanov/duperpowers
-```
-
-## Step 1: Install or Update Plugin
-
-Check `claude plugin list` output for `duperpowers-go`:
-- **Not installed** → install:
-```bash
-claude plugin install duperpowers-go
-```
-- **Already installed** → reinstall to pick up latest version:
-```bash
-claude plugin install duperpowers-go
-```
-Report to the user what version was installed.
-
-**If old `duperpowers` (without -go) is in the list** → remove it:
-```bash
-claude plugin uninstall duperpowers
-```
-
-**Optional:** Ask the user: **"Would you like to install gopls-lsp for Go language intelligence (navigation, diagnostics)? Requires `gopls` in PATH."**
-
-If yes, check `claude plugin list` — if not already installed:
-```bash
-claude plugin install gopls-lsp@claude-plugins-official
-```
-If `gopls` binary is not found in PATH, tell the user: **`go install golang.org/x/tools/gopls@latest`** and ensure `$GOPATH/bin` is in PATH.
-
-Now proceed to **Common Steps** below.
+To present choices to the user: show this table (feature + one-line "what it gives"), ask which to
+install, then for each chosen feature read its `INSTALL.md` and run the protocol.
 
 ---
 
-# Cursor
+## Feature INSTALL.md frontmatter
 
-## Prerequisites
+Every `features/<name>/INSTALL.md` starts with:
 
-Check if superpowers is installed. If not:
-
+```yaml
+---
+name: context
+description: Cross-session memory - WAL log, summaries, recall.
+dependencies: [session-state]      # other features that must be installed first ([] if none)
+platform: [claude-code]            # or [all]
+provides:
+  skills:  [session-context, recall-context, precompact]   # dirs under features/<name>/skills/
+  agents:  [context-reader, wal-compactor, wal-verifier]   # files under features/<name>/agents/
+  scripts: [logwriter.sh]                                   # files under features/<name>/scripts/
+  hooks:   [SessionStart, UserPromptSubmit]                 # files features/<name>/hooks/<Event>.sh
+---
 ```
-/add-plugin superpowers
-```
 
-## Step 1: Install Plugin
-
-Check if duperpowers-go is installed. If not:
-
-```
-/add-plugin duperpowers-go
-```
-
-If already installed, check if an update is available and offer to update.
-
-**If old `duperpowers` (without -go) is installed** → remove it and install `duperpowers-go`.
-
-Now proceed to **Common Steps** below.
-
-**Note:** Cursor does not have marketplace or gopls-lsp support. Anchor rules, preferences, and standalone skills are handled in Common Steps.
+`provides` is the manifest the protocol links/unlinks. Omit empty keys.
 
 ---
 
-# Common Steps
+## Layout in the checkout
 
-These steps are the same for Claude Code and Cursor.
-
-## Step 2: Clean Up Old Installations
-
-Check if `## Duperpowers — Anchor Rules` or other `## Duperpowers —` sections exist in `~/.claude/CLAUDE.md` with old `duperpowers:` references (without `-go`). If found, remove them — they will be replaced with correct references in the next step.
-
-## Step 3: Ask About Anchor Rules
-
-Ask the user: **"Would you like to add duperpowers anchor rules to your CLAUDE.md? This ensures Claude always invokes the right skills. Recommended."**
-
-If yes:
-
-1. Read the user's current `~/.claude/CLAUDE.md` (if it exists)
-2. Check if `## Duperpowers — Anchor Rules` section already exists with correct `duperpowers-go:` references. **If it does — skip, tell the user it's already there.**
-3. Insert the following block BEFORE the first line that consists solely of `@<filename>.md` (e.g. `@RTK.md`). If no such lines exist, append to the end. Ensure a blank line before and after the inserted block:
-
-```markdown
-## Duperpowers — Anchor Rules
-
-- Go implementation → MUST invoke `duperpowers-go:go-writer` + `duperpowers-go:go-writer-test`
-- Go code review → MUST invoke `duperpowers-go:go-reviewer`
-- Any superpowers skill loads → MUST invoke `duperpowers-go:superpowers-overrides`
-- Execution = sonnet. Opus for execution = user-approved exception
-- STOP and report BLOCKED after 3 failed attempts
+```
+features/<name>/
+  INSTALL.md
+  skills/<skill>/SKILL.md
+  agents/<agent>.md
+  scripts/<script>.sh
+  hooks/<Event>.sh          # emits PLAIN TEXT (its additionalContext), NOT wrapped JSON
 ```
 
-4. Show the user what was added
+## Layout once installed (in ~/.claude)
 
-## Step 4: Ask About CLAUDE.md Preferences
-
-Ask the user: **"Would you like to add personal preferences to your CLAUDE.md? This is the author's template — review and adapt to your workflow. Not recommended for most users, but available if you want a starting point."**
-
-If yes:
-
-1. Fetch the snippet template from: `https://raw.githubusercontent.com/dlomanov/duperpowers/main/templates/claude-md-snippet.md`
-2. Read the user's current `~/.claude/CLAUDE.md` (if it exists)
-3. Check if `## Duperpowers — Personal Preferences` section already exists. **If it does — skip, tell the user it's already there.**
-4. Insert only the section below `---` from the template BEFORE the first line that consists solely of `@<filename>.md`. If no such lines exist, append to the end. Ensure a blank line before and after the inserted block
-5. Show the user what was added
-
-## Step 5: Ask About Standalone Skills
-
-Ask the user: **"Would you like to install any standalone skills? These are not part of the plugins — they install as local skill files."**
-
-Present the list:
-
-| Skill | Purpose | Scope |
-|-------|---------|-------|
-| `project-commands` | Make targets, test commands, go doc protocol — template to adapt per project | project or user |
-| `prompt-engineering-rules` | Reference for writing CLAUDE.md, SKILL.md, AI instruction files | project or user |
-| `english-practice` | Passive English practice — responds in English, corrects up to 2 grammar mistakes per response | user (recommended) or project |
-| `spawn-worker` | Spawn parallel Claude Code worker sessions in new Ghostty tabs with pre-filled prompts (macOS + Ghostty only) | user only |
-
-For each skill the user wants, ask: **"Install as project-level (current repo only) or user-level (all repos)?"**
-
-**Before installing, check if the SKILL.md already exists at the target path.** If it does, ask: **"[skill] is already installed at [path]. Overwrite with the latest version? Your customizations will be lost."** Only overwrite if user confirms.
-
-Then fetch and install:
-
-- **project-commands** (project-level):
-```bash
-mkdir -p .claude/skills/project-commands
 ```
-Fetch `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/project-commands/SKILL.md` and write to `.claude/skills/project-commands/SKILL.md`.
-
-- **project-commands** (user-level):
-```bash
-mkdir -p ~/.claude/skills/project-commands
+~/.claude/features/<name>           # registry entry: symlink to checkout OR a copy (user choice)
+~/.claude/skills/<skill>    -> features/<name>/skills/<skill>     (symlink)
+~/.claude/agents/<agent>.md -> features/<name>/agents/<agent>.md  (symlink)
+~/.claude/scripts/<s>.sh    -> features/<name>/scripts/<s>.sh     (symlink)
+~/.claude/hooks/<Event>.d/<name>.sh -> features/<name>/hooks/<Event>.sh (symlink)
+~/.claude/hooks/feature-hooks.sh    # dispatcher, installed once
 ```
-Fetch same URL, write to `~/.claude/skills/project-commands/SKILL.md`.
 
-- **prompt-engineering-rules** (project-level):
-```bash
-mkdir -p .claude/skills/prompt-engineering-rules
-```
-Fetch `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/prompt-engineering-rules/SKILL.md` and write to `.claude/skills/prompt-engineering-rules/SKILL.md`.
+Always symlink the leaf items **into the registry entry** (`~/.claude/features/<name>/...`), so a
+single `remove` of the registry entry + the leaf symlinks fully uninstalls - regardless of whether
+the registry entry itself is a symlink (live) or a copy (portable).
 
-- **prompt-engineering-rules** (user-level):
-```bash
-mkdir -p ~/.claude/skills/prompt-engineering-rules
-```
-Fetch same URL, write to `~/.claude/skills/prompt-engineering-rules/SKILL.md`.
+---
 
-- **english-practice** (user-level, recommended):
-```bash
-mkdir -p ~/.claude/skills/english-practice
-```
-Fetch `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/english-practice/SKILL.md` and write to `~/.claude/skills/english-practice/SKILL.md`.
+## Protocol
 
-- **english-practice** (project-level):
-```bash
-mkdir -p .claude/skills/english-practice
-```
-Fetch same URL, write to `.claude/skills/english-practice/SKILL.md`.
+### 0. INSTALLED? (check before anything)
+`~/.claude/features/<name>` exists  →  installed. Report status; ask if user wants update/remove.
 
-- **spawn-worker** (user-level only, requires macOS + Ghostty.app + Claude Code):
+### 1. INSTALL `<name>`
+1. Read `features/<name>/INSTALL.md` frontmatter.
+2. **Dependencies:** for each in `dependencies` not yet installed → tell the user it's required,
+   ask `y/n` to install it first, and if yes recurse into INSTALL for the dependency.
+3. **Mode:** ask the user - `symlink` (default; needs this checkout to stay in place; `update` = `git pull`)
+   or `copy` (portable; survives without the checkout, for copying into another machine/repo).
+4. Create registry entry:
+   - symlink: `ln -s "<checkout>/features/<name>" "$HOME/.claude/features/<name>"`
+   - copy:    `cp -R "<checkout>/features/<name>" "$HOME/.claude/features/<name>"`
+5. For each item in `provides`, create the leaf symlink (see layout). On conflict (the item
+   already exists in `~/.claude/...`), ask the user `Conflict at <path> - overwrite? [y/n]`;
+   never overwrite silently.
+6. **Hooks:** for each event in `provides.hooks`:
+   - `mkdir -p "$HOME/.claude/hooks/<Event>.d"`
+   - symlink `features/<name>/hooks/<Event>.sh` → `~/.claude/hooks/<Event>.d/<name>.sh`
+   - ensure the dispatcher is wired (step 7).
+7. **Dispatcher (once, idempotent):**
+   - if `~/.claude/hooks/feature-hooks.sh` absent → install it from `features/_lib/feature-hooks.sh`
+     (shared mechanism infra, not owned by any single feature). It runs every script in
+     `~/.claude/hooks/<Event>.d/`, collects each one's stdout, and emits a single merged
+     `{hookSpecificOutput:{hookEventName, additionalContext}}`.
+   - ensure `settings.json` has, for each used `<Event>`, exactly one hook entry calling
+     `"$HOME/.claude/hooks/feature-hooks.sh" <Event>`. Add if missing; never duplicate.
+8. Confirm what was linked (file:line list) so the user can revert.
 
-  This skill ships with bash helper scripts (`~/bin/cc-run-worker`, `~/bin/spawn-cc-worker`) in addition to `SKILL.md`. Do NOT use the single-file curl pattern above. Instead, delegate to the dedicated install flow:
+### 2. UPDATE `<name>`
+- symlink mode: `git -C "<checkout>" pull` (everything is live; nothing to re-link).
+- copy mode: re-`cp -R` the feature dir into the registry entry, then re-create leaf symlinks.
 
-  1. Fetch `https://raw.githubusercontent.com/dlomanov/duperpowers/main/standalone/spawn-worker/INSTALL.md`
-  2. Follow every step in that file exactly — it handles platform checks (macOS, Ghostty, claude CLI, zsh), network probes (corporate proxy, MDM writability), macOS Automation permission pre-warming, file install with checksum sidecars, and an automated sentinel-file smoke test.
-  3. Report back here with the dedicated flow's outcome (passed / failed, plus any STOP reasons).
+### 3. REMOVE `<name>`
+1. **Dependents:** if any installed feature lists `<name>` in its `dependencies` → warn, ask `y/n`.
+2. Remove every leaf symlink this feature created (skills/agents/scripts/`<Event>.d/<name>.sh`).
+3. Remove `~/.claude/features/<name>`.
+4. Leave the dispatcher and any user data (`~/.claude/session_state/*`) in place; ask `y/n` before
+   deleting stored data.
 
-  If the user is not on macOS or does not have Ghostty installed, skip this skill and tell the user: **"spawn-worker requires macOS + Ghostty. Skipping."**
+---
 
-Tell the user: **"project-commands is a template — edit it to match your project's actual Makefile targets."**
+## Personal preferences (optional)
 
-## Step 6: Verify
+The repo also ships `templates/claude-md-snippet.md`, the author's optional personal-preferences
+snippet. It is **not** a feature - no install protocol, no symlink, no registry entry. To use it,
+the user simply copies its contents and manually appends/adapts them in `~/.claude/CLAUDE.md`.
 
-Run through each check and report results to the user:
+---
 
-**Plugins:**
-- [ ] `superpowers` is installed
-- [ ] `duperpowers-go` is installed
-- [ ] Old `duperpowers` (without -go) is NOT installed
-
-**CLAUDE.md** (if steps 3-4 were done):
-- [ ] `## Duperpowers — Anchor Rules` section exists with `duperpowers-go:` references
-- [ ] No old `duperpowers:` references (without -go)
-- [ ] Sections are placed BEFORE `@<filename>.md` import lines (if any)
-
-**Standalone skills** (if step 5 was done):
-- [ ] SKILL.md exists at each chosen path
-- [ ] If `spawn-worker` was chosen: `~/bin/cc-run-worker` and `~/bin/spawn-cc-worker` are executable, and the dedicated INSTALL flow's smoke test passed
-
-Report the checklist with pass/fail for each item. If anything failed, offer to fix it.
-
-Tell the user: **"Installation complete. Start a new session to activate duperpowers-go. You can verify by asking 'Tell me about your duperpowers'."**
+## Notes
+- All user-facing prompts and messages are in English.
+- This protocol writes only under `~/.claude/`. Never touch system temp dirs.
+- Feature hook scripts run via a symlink in `<Event>.d/`, so they MUST resolve sibling
+  scripts from `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/scripts/`, never from their own
+  `$0`/`BASH_SOURCE` dir (that points at `<Event>.d/`, not `scripts/`).
+- Idempotent: re-running INSTALL on an installed feature is a no-op + status report.
+- Hooks are Claude Code only; on other platforms skip `provides.hooks`.
