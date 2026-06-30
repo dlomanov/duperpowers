@@ -15,9 +15,9 @@ feature's `INSTALL.md` only adds feature-specific notes on top of this protocol.
 | Feature | Depends on | What it gives | INSTALL.md |
 |---------|-----------|---------------|------------|
 | `session-state` | - | `kv.sh` - per-session key/value store (`~/.claude/session_state/*.state`) | `features/session-state/INSTALL.md` |
-| `context` | `session-state` | Cross-session memory: WAL log, summaries, recall, precompact (skills + agents + hooks) | `features/context/INSTALL.md` |
 | `prompt-engineering-rules` | - | Reference skill for writing CLAUDE.md / SKILL.md / AI instruction files | `features/prompt-engineering-rules/INSTALL.md` |
 | `mit-writer` | - | MIT-outline hierarchical notes skill | `features/mit-writer/INSTALL.md` |
+| `output-format` | - | Topdown "thought island" chat-output style (skill + per-turn nudge hook) | `features/output-format/INSTALL.md` |
 
 To present choices to the user: show this table (feature + one-line "what it gives"), ask which to
 install, then for each chosen feature read its `INSTALL.md` and run the protocol.
@@ -30,15 +30,15 @@ Every `features/<name>/INSTALL.md` starts with:
 
 ```yaml
 ---
-name: context
-description: Cross-session memory - WAL log, summaries, recall.
-dependencies: [session-state]      # other features that must be installed first ([] if none)
+name: my-feature
+description: One-line trigger-phrase summary of what the feature does.
+dependencies: [other-feature]      # other features that must be installed first ([] if none)
 platform: [claude-code]            # or [all]
 provides:
-  skills:  [session-context, recall-context, precompact]   # dirs under features/<name>/skills/
-  agents:  [context-reader, wal-compactor, wal-verifier]   # files under features/<name>/agents/
-  scripts: [logwriter.sh]                                   # files under features/<name>/scripts/
-  hooks:   [SessionStart, UserPromptSubmit]                 # files features/<name>/hooks/<Event>.sh
+  skills:  [my-skill]                          # dirs under features/<name>/skills/
+  agents:  [my-agent]                          # files under features/<name>/agents/
+  scripts: [my-script.sh]                      # files under features/<name>/scripts/
+  hooks:   [SessionStart, UserPromptSubmit]    # files features/<name>/hooks/<Event>.sh
 ---
 ```
 

@@ -21,9 +21,9 @@ or as a **copy** (portable - survives without the checkout, for moving onto anot
 | Feature | Depends on | What it gives |
 |---------|-----------|---------------|
 | `session-state` | - | `kv.sh` - per-session key/value store |
-| `context` | `session-state` | Cross-session memory: WAL log, summaries, recall, precompact |
 | `prompt-engineering-rules` | - | Reference skill for writing CLAUDE.md / SKILL.md / AI instruction files |
 | `mit-writer` | - | MIT-outline hierarchical notes skill |
+| `output-format` | - | Topdown "thought island" chat-output style (skill + per-turn nudge hook) |
 
 ## Repository structure
 
@@ -32,9 +32,9 @@ duperpowers/
 ├── features/
 │   ├── _lib/feature-hooks.sh        # hook dispatcher (shared infra)
 │   ├── session-state/               # INSTALL.md + scripts/
-│   ├── context/                     # INSTALL.md + skills/ + agents/ + scripts/ + hooks/
 │   ├── prompt-engineering-rules/    # INSTALL.md + skills/
-│   └── mit-writer/                  # INSTALL.md + skills/
+│   ├── mit-writer/                  # INSTALL.md + skills/
+│   └── output-format/               # INSTALL.md + skills/ + hooks/
 ├── templates/claude-md-snippet.md   # optional personal-preferences append (not a feature)
 ├── INSTALL.md                       # the single install entry (agent-facing)
 ├── CLAUDE.md

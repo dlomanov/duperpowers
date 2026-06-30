@@ -27,7 +27,6 @@ Fastest check: run a feature's shipped test scripts.
 
 ```bash
 bash features/session-state/scripts/test_kv.sh        # expect: 17 passed, 0 failed
-bash features/context/scripts/test_logwriter.sh       # expect: 27 passed, 0 failed
 ```
 
 Full-install verification: follow `INSTALL.md` against a throwaway `CLAUDE_CONFIG_DIR` pointed at a dir
@@ -67,9 +66,9 @@ Current features under `features/`:
 | Feature | Deps | What it gives |
 |---------|------|---------------|
 | `session-state` | - | `kv.sh` - pure per-session key/value store (`~/.claude/session_state/*.state`) |
-| `context` | `session-state` | Cross-session WAL memory: log, summaries, recall, precompact (skills + agents + hooks) |
 | `prompt-engineering-rules` | - | Reference skill for writing CLAUDE.md / SKILL.md / AI instruction files |
 | `mit-writer` | - | MIT-outline hierarchical notes skill (user-facing) |
+| `output-format` | - | Topdown "thought island" chat-output style (skill + per-turn nudge hook) |
 
 ## Conventions
 
